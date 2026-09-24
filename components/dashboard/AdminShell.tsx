@@ -20,6 +20,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useState, type ReactNode } from "react";
 import { useNow } from "@/components/menu/hooks";
+import { Credit } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { businessStatus, STATUS_COLORS } from "@/lib/hours";
 import { useAdmin } from "./AdminProvider";
@@ -242,7 +243,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </header>
 
         <main id="admin-scroll" className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-[1240px] px-7 pt-7 pb-[120px] max-[640px]:px-4">{children}</div>
+          <div className="mx-auto max-w-[1240px] px-7 pt-7 pb-10 max-[640px]:px-4">
+            {children}
+            <Credit className="mt-20 text-p-muted" />
+          </div>
         </main>
       </div>
     </div>

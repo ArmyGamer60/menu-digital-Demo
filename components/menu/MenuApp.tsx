@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Toast, useToast } from "@/components/ui";
+import { Credit, Toast, useToast } from "@/components/ui";
 import { businessStatus, zonedClock } from "@/lib/hours";
 import { money } from "@/lib/money";
 import { cartTotals, defaultSelections, describeSelections, lineUnitPrice } from "@/lib/pricing";
@@ -315,9 +315,15 @@ export function MenuApp({ initialBusiness }: { initialBusiness: Business }) {
         {loadState === "loading" ? (
           <MenuSkeleton />
         ) : loadState === "error" ? (
-          <MenuError onRetry={retry} />
+          <>
+            <MenuError onRetry={retry} />
+            <Credit className="pb-8 text-muted" />
+          </>
         ) : !products.length ? (
-          <MenuEmpty />
+          <>
+            <MenuEmpty />
+            <Credit className="pb-8 text-muted" />
+          </>
         ) : (
           <div className="mx-auto flex max-w-[var(--maxw)] items-start gap-10 px-[var(--gutter)]">
             {!inSearch ? <CategorySidebar items={nav} activeId={active} onSelect={scrollToCat} /> : null}
@@ -379,6 +385,7 @@ export function MenuApp({ initialBusiness }: { initialBusiness: Business }) {
               <footer className="mt-14 flex flex-wrap justify-between gap-x-5 gap-y-2 border-t border-line py-6 text-[13px] text-muted">
                 <span>{business.address}</span>
                 <span>menu.app/menu/{business.slug}</span>
+                <Credit className="basis-full pt-2 text-muted" />
               </footer>
             </main>
           </div>

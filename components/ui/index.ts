@@ -9,3 +9,4 @@ export { Toast, useToast } from "./Toast";
 export { ConfirmDialog } from "./ConfirmDialog";
 export { Skeleton } from "./Skeleton";
 export { EmptyState } from "./EmptyState";
+export { Credit } from "./Credit";

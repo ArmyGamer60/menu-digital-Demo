@@ -1,6 +1,7 @@
 "use client";
 
 import { MenuError } from "@/components/menu/MenuStates";
+import { Credit } from "@/components/ui";
 import { seedBusiness } from "@/data/seed";
 import { asStyle, themeToCssVars } from "@/lib/theme";
 
@@ -9,6 +10,7 @@ export default function MenuRouteError({ reset }: { error: Error & { digest?: st
   return (
     <div className="menu-root" data-card="editorial" data-layout="grid" style={asStyle(themeToCssVars(seedBusiness.theme))}>
       <MenuError onRetry={reset} />
+      <Credit className="pb-8 text-muted" />
     </div>
   );
 }

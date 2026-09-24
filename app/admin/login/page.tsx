@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { Credit } from "@/components/ui";
 import { authMode, safeNext } from "@/lib/auth";
 import { LoginForm } from "./LoginForm";
 
@@ -34,6 +35,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           {mode === "dev-any"
             ? "Modo desarrollo: sin ADMIN_PASSWORD, cualquier contraseña entra."
             : "Demo · los datos se guardan en este navegador."}
+          <Credit className="mt-1.5 text-left text-p-muted" />
         </div>
       </div>
       <div className="relative m-4 hidden overflow-hidden rounded-[20px] bg-[#2A2622] min-[900px]:block">

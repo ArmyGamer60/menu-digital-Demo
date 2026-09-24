@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Utensils } from "lucide-react";
-import { EmptyState } from "@/components/ui";
+import { Credit, EmptyState } from "@/components/ui";
 import { seedBusiness } from "@/data/seed";
 import { asStyle, themeToCssVars } from "@/lib/theme";
 
@@ -21,6 +21,7 @@ export default function NotFound() {
       >
         Revisa el enlace o escanea de nuevo el código QR.
       </EmptyState>
+      <Credit className="pb-8 text-muted" />
     </div>
   );
 }
