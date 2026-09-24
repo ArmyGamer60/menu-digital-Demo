@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<title>Molienda — Menú digital</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Cormorant+Garamond:wght@500;600;700&amp;family=Karla:wght@400;500;700&amp;family=Archivo+Black&amp;family=Archivo:wght@400;500;700&amp;family=Young+Serif&amp;family=Figtree:wght@400;500;700&amp;display=swap">
+<script src="data/demo.js"></script>
+<style>
+html,body{margin:0;padding:0;height:100%;background:#E7E3DC;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit}
+input,textarea{font:inherit}
+a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+a:hover{opacity:.75}
+::-webkit-scrollbar{width:0;height:0}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes drawerIn{from{transform:translateX(100%)}to{transform:none}}
+@keyframes modalIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+</style>
+</helmet>
+
+<div style="height:100vh; display:flex; justify-content:center; overflow-x:auto; background:#E7E3DC">
+  <div ref="{{ frameRef }}" style="{{ frameStyle }}">
+
+    <div ref="{{ scrollerRef }}" onScroll="{{ onScroll }}" style="height:100%; overflow-y:auto; overflow-x:hidden; padding-right:var(--cart-w, 0px); scroll-behavior:auto">
+
+      <header style="position:sticky; top:0; z-index:30; background:var(--bg, #F5EFE6); border-bottom:1px solid var(--line, rgba(0,0,0,.08))">
+        <div style="max-width:var(--maxw, 1200px); margin:0 auto; padding:12px var(--gutter, 16px); display:flex; align-items:center; gap:12px">
+          <div style="width:44px; height:44px; flex:none; border-radius:50%; background:var(--brand, #B4532A); color:var(--on-brand, #fff); display:flex; align-items:center; justify-content:center; font-family:var(--fd, Gloock, serif); font-size:22px; line-height:1; overflow:hidden"><sc-if value="{{ hasLogoImg }}"><div role="img" aria-label="Logo" style="{{ logoBg }}"></div></sc-if><sc-if value="{{ noLogoImg }}" hint-placeholder-val="{{ true }}"><span>{{ biz.logoText }}</span></sc-if></div>
+          <div style="min-width:0; flex:1">
+            <div style="display:flex; align-items:baseline; gap:8px; min-width:0">
+              <div style="font-family:var(--fd, Gloock, serif); font-size:21px; line-height:1.1; letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ biz.name }}</div>
+              <sc-if value="{{ notMobile }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px; color:var(--muted, #6b6258); white-space:nowrap">{{ biz.tagline }}</div></sc-if>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; margin-top:3px; font-size:12.5px; font-weight:600; color:var(--muted, #6b6258)">
+              <span style="{{ statusDotStyle }}"></span><span>{{ statusText }}</span>
+            </div>
+          </div>
+          <button onClick="{{ toggleSearch }}" aria-label="Buscar" style="width:44px; height:44px; border-radius:50%; border:1px solid var(--line); background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          </button>
+          <button onClick="{{ openInfo }}" aria-label="Información del negocio" style="width:44px; height:44px; border-radius:50%; border:1px solid var(--line); background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 16v-5M12 8h.01"></path></svg>
+          </button>
+          <sc-if value="{{ notDesktop }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ openCart }}" aria-label="Carrito" style="position:relative; width:44px; height:44px; border-radius:50%; border:none; background:var(--ink, #1F1B16); color:var(--bg, #F5EFE6); display:flex; align-items:center; justify-content:center; cursor:pointer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M5.5 8h13l-1 12h-11z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg>
+              <sc-if value="{{ hasCart }}"><span style="position:absolute; top:-3px; right:-3px; min-width:20px; height:20px; padding:0 5px; border-radius:10px; background:var(--brand); color:var(--on-brand); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; border:2px solid var(--bg)">{{ totals.count }}</span></sc-if>
+            </button>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ searchOpen }}">
+          <div style="max-width:var(--maxw); margin:0 auto; padding:0 var(--gutter) 12px; animation:rise .18s ease-out">
+            <div style="display:flex; align-items:center; gap:10px; height:46px; padding:0 14px; border-radius:23px; background:var(--surface, #fff); border:1px solid var(--line)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+              <input ref="{{ searchRef }}" value="{{ search }}" onChange="{{ onSearch }}" placeholder="Buscar en el menú" style="flex:1; min-width:0; border:none; outline:none; background:transparent; font-size:16px; color:var(--ink)">
+              <sc-if value="{{ hasSearch }}"><button onClick="{{ clearSearch }}" style="border:none; background:transparent; font-size:13px; font-weight:600; cursor:pointer; color:var(--muted)">Borrar</button></sc-if>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showChips }}" hint-placeholder-val="{{ true }}">
+          <div ref="{{ chipsRef }}" style="display:flex; gap:8px; overflow-x:auto; padding:0 var(--gutter) 12px; max-width:var(--maxw); margin:0 auto; scroll-behavior:smooth">
+            <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6">
+              <button data-chip="{{ n.id }}" onClick="{{ n.onClick }}" style="{{ n.chipStyle }}">{{ n.name }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </header>
+
+      <sc-if value="{{ banner.show }}">
+        <div style="max-width:var(--maxw); margin:0 auto; padding:14px var(--gutter) 0">
+          <div style="display:flex; gap:12px; align-items:flex-start; padding:14px 16px; border-radius:14px; background:var(--ink); color:var(--bg)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style="flex:none; margin-top:1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+            <div>
+              <div style="font-weight:700; font-size:15px">{{ banner.title }}</div>
+              <div style="font-size:13.5px; margin-top:2px; opacity:.85">{{ banner.text }}</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ true }}">
+        <div style="max-width:var(--maxw); margin:0 auto; padding:20px var(--gutter)">
+          <div style="height:180px; border-radius:18px; background:var(--line, rgba(0,0,0,.08)); animation:pulse 1.2s infinite"></div>
+          <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:24px">
+            <div style="aspect-ratio:3/4; border-radius:14px; background:var(--line, rgba(0,0,0,.08)); animation:pulse 1.2s infinite"></div>
+            <div style="aspect-ratio:3/4; border-radius:14px; background:var(--line, rgba(0,0,0,.08)); animation:pulse 1.2s .15s infinite"></div>
+            <div style="aspect-ratio:3/4; border-radius:14px; background:var(--line, rgba(0,0,0,.08)); animation:pulse 1.2s .3s infinite"></div>
+            <div style="aspect-ratio:3/4; border-radius:14px; background:var(--line, rgba(0,0,0,.08)); animation:pulse 1.2s .45s infinite"></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isError }}">
+        <div style="max-width:420px; margin:0 auto; padding:80px 24px; text-align:center; animation:rise .3s ease-out">
+          <div style="width:64px; height:64px; margin:0 auto 18px; border-radius:50%; border:1.5px solid var(--ink); display:flex; align-items:center; justify-content:center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M12 8v5M12 16.5h.01"></path><circle cx="12" cy="12" r="9"></circle></svg>
+          </div>
+          <div style="font-family:var(--fd); font-size:30px; line-height:1.1">Algo salió mal.</div>
+          <p style="color:var(--muted); font-size:15px; line-height:1.5; margin:10px 0 24px">No pudimos cargar el menú. Revisa tu conexión e inténtalo de nuevo.</p>
+          <button onClick="{{ retry }}" style="height:50px; padding:0 28px; border-radius:25px; border:none; background:var(--ink); color:var(--bg); font-weight:700; cursor:pointer">Reintentar</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isEmpty }}">
+        <div style="max-width:420px; margin:0 auto; padding:80px 24px; text-align:center; animation:rise .3s ease-out">
+          <div style="width:64px; height:64px; margin:0 auto 18px; border-radius:50%; border:1.5px solid var(--ink); display:flex; align-items:center; justify-content:center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M5 3v7a2 2 0 0 0 4 0V3M7 10v11M17 21V3c-2.5 1.5-3.5 4-3.5 8H17"></path></svg>
+          </div>
+          <div style="font-family:var(--fd); font-size:30px; line-height:1.1">No hay productos disponibles.</div>
+          <p style="color:var(--muted); font-size:15px; line-height:1.5; margin:10px 0 0">Estamos preparando el menú. Vuelve pronto.</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isReady }}">
+        <div style="max-width:var(--maxw); margin:0 auto; padding:0 var(--gutter); display:flex; gap:40px; align-items:flex-start">
+
+          <sc-if value="{{ isDesktop }}">
+            <nav style="position:sticky; top:96px; width:200px; flex:none; padding-top:28px; display:flex; flex-direction:column; gap:2px">
+              <div style="font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); padding:0 12px 10px">Menú</div>
+              <sc-for list="{{ nav }}" as="n">
+                <button onClick="{{ n.onClick }}" style="{{ n.sideStyle }}">
+                  <span>{{ n.name }}</span><span style="font-size:12px; color:var(--muted); font-weight:500">{{ n.count }}</span>
+                </button>
+              </sc-for>
+            </nav>
+          </sc-if>
+
+          <main style="flex:1; min-width:0; padding-bottom:140px">
+
+            <sc-if value="{{ showHero }}" hint-placeholder-val="{{ true }}">
+              <section style="margin-top:18px; position:relative; border-radius:var(--hero-radius, 20px); overflow:hidden; min-height:var(--hero-h, 220px); display:flex; align-items:flex-end; background:var(--ink); animation:rise .4s ease-out">
+                <div style="{{ heroBg }}"></div>
+                <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0) 20%, rgba(0,0,0,.72) 100%)"></div>
+                <div style="position:relative; padding:22px; color:#fff; max-width:560px">
+                  <div style="display:inline-flex; padding:5px 10px; border-radius:20px; background:var(--accent, #E3A63B); color:#1b1408; font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase">Especial</div>
+                  <div style="font-family:var(--fd); font-size:var(--hero-fs, 32px); line-height:1.02; letter-spacing:-.015em; margin-top:10px; text-wrap:balance">{{ theme.heroTitle }}</div>
+                  <div style="font-size:15px; line-height:1.45; margin-top:6px; color:rgba(255,255,255,.9)">{{ theme.heroText }}</div>
+                </div>
+              </section>
+            </sc-if>
+
+            <sc-if value="{{ hasPromos }}">
+              <div style="display:flex; gap:10px; overflow-x:auto; margin:14px calc(var(--gutter) * -1) 0; padding:0 var(--gutter)">
+                <sc-for list="{{ promos }}" as="pr">
+                  <div style="flex:none; display:flex; align-items:center; gap:10px; padding:10px 14px 10px 10px; border-radius:14px; border:1px solid var(--line); background:var(--surface)">
+                    <div style="width:34px; height:34px; border-radius:10px; background:var(--brand2, #2F4A3A); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px">{{ pr.tag }}</div>
+                    <div>
+                      <div style="font-size:14px; font-weight:700">{{ pr.name }}</div>
+                      <div style="font-size:12.5px; color:var(--muted)">{{ pr.banner }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ inSearch }}">
+              <section style="padding-top:26px">
+                <div style="font-family:var(--fd); font-size:26px; letter-spacing:-.01em">{{ searchTitle }}</div>
+                <sc-if value="{{ noResults }}">
+                  <p style="color:var(--muted); font-size:15px; margin-top:8px">Prueba con otra palabra, por ejemplo “latte” o “vegano”.</p>
+                </sc-if>
+              </section>
+            </sc-if>
+
+            <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="2">
+              <section ref="{{ sec.ref }}" style="padding-top:30px">
+                <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px">
+                  <div>
+                    <h2 style="margin:0; font-family:var(--fd); font-weight:400; font-size:var(--sec-fs, 28px); line-height:1.05; letter-spacing:-.015em">{{ sec.name }}</h2>
+                    <sc-if value="{{ sec.hasDesc }}"><div style="font-size:14px; color:var(--muted); margin-top:4px">{{ sec.description }}</div></sc-if>
+                  </div>
+                  <div style="font-size:13px; color:var(--muted); white-space:nowrap">{{ sec.countLabel }}</div>
+                </div>
+
+                <sc-if value="{{ sec.isEmpty }}">
+                  <div style="padding:28px 20px; border:1.5px dashed var(--line-strong, rgba(0,0,0,.2)); border-radius:16px; text-align:center; color:var(--muted); font-size:15px">Esta categoría aún no tiene productos.</div>
+                </sc-if>
+
+                <sc-if value="{{ sec.isStrip }}">
+                  <div style="display:flex; gap:12px; overflow-x:auto; margin:0 calc(var(--gutter) * -1); padding:0 var(--gutter); scroll-snap-type:x mandatory">
+                    <sc-for list="{{ sec.items }}" as="p">
+                      <div role="button" tabIndex="0" onClick="{{ p.onOpen }}" style="flex:none; width:var(--strip-w, 240px); scroll-snap-align:start; position:relative; aspect-ratio:4/5; border-radius:var(--c-radius-strip, 18px); overflow:hidden; cursor:pointer; background:var(--ink)">
+                        <div role="img" aria-label="{{ p.name }}" style="{{ p.bgAbs }}"></div>
+                        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,.05) 35%, rgba(0,0,0,.78) 100%); pointer-events:none"></div>
+                        <sc-if value="{{ p.hasBadge }}"><span style="{{ p.badgeStyle }}">{{ p.badgeLabel }}</span></sc-if>
+                        <div style="position:absolute; left:16px; right:16px; bottom:16px; color:#fff; pointer-events:none">
+                          <div style="font-family:var(--fd); font-size:23px; line-height:1.05; letter-spacing:-.01em">{{ p.name }}</div>
+                          <div style="display:flex; align-items:baseline; gap:8px; margin-top:6px; font-weight:700; font-size:15px">
+                            <span>{{ p.priceLabel }}</span>
+                            <sc-if value="{{ p.hasCompare }}"><span style="font-weight:500; text-decoration:line-through; opacity:.75; font-size:13px">{{ p.compareLabel }}</span></sc-if>
+                          </div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ sec.isGrid }}" hint-placeholder-val="{{ true }}">
+                  <div style="{{ gridStyle }}">
+                    <sc-for list="{{ sec.items }}" as="p" hint-placeholder-count="4">
+                      <div role="button" tabIndex="0" onClick="{{ p.onOpen }}" style="position:relative; display:flex; flex-direction:column; background:var(--c-surface, transparent); border:var(--c-border, none); border-radius:var(--c-radius, 4px); box-shadow:var(--c-shadow, none); overflow:hidden; cursor:pointer; transition:transform .2s ease, box-shadow .2s ease; animation:rise .35s ease-out both" style-hover="transform:translateY(-2px)">
+                        <div style="position:relative; aspect-ratio:var(--c-ratio, 4/5); overflow:hidden; border-radius:var(--c-img-radius, 4px); background:var(--img-bg)">
+                          <div role="img" aria-label="{{ p.name }}" style="{{ p.bgFill }}"></div>
+                          <sc-if value="{{ p.hasBadge }}"><span style="{{ p.badgeStyle }}">{{ p.badgeLabel }}</span></sc-if>
+                          <sc-if value="{{ p.soldOut }}">
+                            <div style="position:absolute; inset:0; background:rgba(20,18,15,.55); display:flex; align-items:center; justify-content:center; padding:12px; text-align:center; color:#fff; font-weight:700; font-size:13.5px">Agotado temporalmente</div>
+                          </sc-if>
+                          <sc-if value="{{ p.canQuick }}">
+                            <button onClick="{{ p.onQuick }}" aria-label="Agregar" style="position:absolute; right:10px; bottom:10px; width:40px; height:40px; border-radius:50%; border:none; background:var(--bg); color:var(--ink); box-shadow:0 4px 14px rgba(0,0,0,.18); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform .15s" style-active="transform:scale(.9)">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                            </button>
+                          </sc-if>
+                        </div>
+                        <div style="padding:var(--c-pad, 12px 2px); display:flex; flex-direction:column; gap:4px; flex:1">
+                          <div style="font-family:var(--c-tf); font-size:var(--c-ts, 18px); font-weight:var(--c-tw, 400); line-height:1.12; letter-spacing:var(--c-ls, -.01em); text-transform:var(--c-tt, none); text-wrap:pretty">{{ p.name }}</div>
+                          <sc-if value="{{ showDesc }}" hint-placeholder-val="{{ true }}"><div style="font-size:13px; line-height:1.4; color:var(--muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden">{{ p.description }}</div></sc-if>
+                          <div style="display:flex; align-items:baseline; gap:8px; margin-top:auto; padding-top:6px">
+                            <span style="font-weight:700; font-size:15px; font-variant-numeric:tabular-nums">{{ p.priceLabel }}</span>
+                            <sc-if value="{{ p.hasCompare }}"><span style="text-decoration:line-through; color:var(--muted); font-size:13px">{{ p.compareLabel }}</span></sc-if>
+                          </div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ sec.isOverlay }}">
+                  <div style="{{ gridStyle }}">
+                    <sc-for list="{{ sec.items }}" as="p">
+                      <div role="button" tabIndex="0" onClick="{{ p.onOpen }}" style="position:relative; aspect-ratio:3/4; border-radius:var(--c-radius, 16px); overflow:hidden; cursor:pointer; background:var(--ink); animation:rise .35s ease-out both">
+                        <div role="img" aria-label="{{ p.name }}" style="{{ p.bgAbs }}"></div>
+                        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,.82) 100%); pointer-events:none"></div>
+                        <sc-if value="{{ p.hasBadge }}"><span style="{{ p.badgeStyle }}">{{ p.badgeLabel }}</span></sc-if>
+                        <div style="position:absolute; left:14px; right:14px; bottom:14px; color:#fff; pointer-events:none">
+                          <div style="font-family:var(--fd); font-size:20px; line-height:1.05">{{ p.name }}</div>
+                          <div style="font-size:12.5px; opacity:.85; margin-top:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden">{{ p.description }}</div>
+                          <div style="font-weight:700; margin-top:8px">{{ p.priceLabel }} <span style="font-weight:500; opacity:.8">{{ p.soldOutLabel }}</span></div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ sec.isRows }}">
+                  <div style="{{ gridStyle }}">
+                    <sc-for list="{{ sec.items }}" as="p">
+                      <div role="button" tabIndex="0" onClick="{{ p.onOpen }}" style="display:flex; gap:14px; align-items:center; padding:var(--r-pad, 14px); background:var(--c-surface, transparent); border:var(--c-border, none); border-bottom:1px solid var(--line); border-radius:var(--r-radius, 0px); cursor:pointer; animation:rise .3s ease-out both" style-hover="background:var(--hover-bg)">
+                        <div style="flex:1; min-width:0">
+                          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+                            <div style="font-family:var(--c-tf); font-size:var(--r-ts, 17px); font-weight:var(--c-tw, 600); line-height:1.15; text-transform:var(--c-tt, none); letter-spacing:var(--c-ls, 0)">{{ p.name }}</div>
+                            <sc-if value="{{ p.hasBadge }}"><span style="{{ p.badgeInline }}">{{ p.badgeLabel }}</span></sc-if>
+                          </div>
+                          <sc-if value="{{ showDesc }}"><div style="font-size:13px; line-height:1.4; color:var(--muted); margin-top:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden">{{ p.description }}</div></sc-if>
+                          <div style="display:flex; align-items:baseline; gap:8px; margin-top:8px">
+                            <span style="font-weight:700; font-size:15px">{{ p.priceLabel }}</span>
+                            <sc-if value="{{ p.hasCompare }}"><span style="text-decoration:line-through; color:var(--muted); font-size:13px">{{ p.compareLabel }}</span></sc-if>
+                            <sc-if value="{{ p.soldOut }}"><span style="font-size:12.5px; font-weight:600; color:var(--muted)">Agotado temporalmente</span></sc-if>
+                          </div>
+                        </div>
+                        <div style="position:relative; width:var(--r-thumb, 96px); height:var(--r-thumb, 96px); flex:none; border-radius:var(--r-img-radius, 12px); overflow:hidden; background:var(--img-bg)">
+                          <div role="img" aria-label="{{ p.name }}" style="{{ p.bgFill }}"></div>
+                          <sc-if value="{{ p.soldOut }}"><div style="position:absolute; inset:0; background:rgba(20,18,15,.5)"></div></sc-if>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </section>
+            </sc-for>
+
+            <footer style="margin-top:56px; padding:24px 0; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; gap:8px 20px; justify-content:space-between; font-size:13px; color:var(--muted)">
+              <span>{{ biz.address }}</span>
+              <span>{{ publicUrl }}</span>
+            </footer>
+          </main>
+        </div>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{ showCartBar }}">
+      <button key="{{ bump }}" onClick="{{ openCart }}" style="position:absolute; left:var(--gutter); right:var(--gutter); bottom:16px; z-index:40; height:58px; max-width:560px; margin:0 auto; border:none; border-radius:29px; background:var(--brand); color:var(--on-brand); display:flex; align-items:center; gap:12px; padding:0 8px 0 8px; font-weight:700; font-size:16px; cursor:pointer; box-shadow:0 10px 30px rgba(0,0,0,.25); animation:bump .35s ease-out">
+        <span style="min-width:42px; height:42px; border-radius:21px; background:rgba(0,0,0,.18); display:flex; align-items:center; justify-content:center; font-size:15px">{{ totals.count }}</span>
+        <span style="flex:1; text-align:left">Ver pedido</span>
+        <span style="padding-right:14px; font-variant-numeric:tabular-nums">{{ totalLabel }}</span>
+      </button>
+    </sc-if>
+
+    <sc-if value="{{ showCartLayer }}">
+      <sc-if value="{{ cartDim }}"><div onClick="{{ closeCart }}" style="position:absolute; inset:0; z-index:50; background:rgba(15,12,10,.45); animation:fadeIn .2s"></div></sc-if>
+      <aside style="{{ cartPanelStyle }}">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 20px 14px; border-bottom:1px solid var(--line)">
+          <div>
+            <div style="font-family:var(--fd); font-size:24px; line-height:1">Tu pedido</div>
+            <div style="font-size:13px; color:var(--muted); margin-top:4px">{{ cartCountLabel }}</div>
+          </div>
+          <sc-if value="{{ notDesktop }}">
+            <button onClick="{{ closeCart }}" aria-label="Cerrar" style="width:44px; height:44px; border-radius:50%; border:1px solid var(--line); background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+            </button>
+          </sc-if>
+        </div>
+
+        <div style="flex:1; overflow-y:auto; padding:6px 20px">
+          <sc-if value="{{ cartEmpty }}">
+            <div style="padding:56px 8px; text-align:center">
+              <div style="width:60px; height:60px; margin:0 auto 16px; border-radius:50%; background:var(--img-bg); display:flex; align-items:center; justify-content:center">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M5.5 8h13l-1 12h-11z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg>
+              </div>
+              <div style="font-family:var(--fd); font-size:22px; line-height:1.15; text-wrap:balance">Tu carrito está esperando algo delicioso.</div>
+              <div style="font-size:14px; color:var(--muted); margin-top:8px">Agrega productos del menú para empezar tu pedido.</div>
+              <sc-if value="{{ notDesktop }}"><button onClick="{{ closeCart }}" style="margin-top:20px; height:46px; padding:0 22px; border-radius:23px; border:1px solid var(--ink); background:transparent; font-weight:700; cursor:pointer">Explorar menú</button></sc-if>
+            </div>
+          </sc-if>
+          <sc-for list="{{ lines }}" as="l">
+            <div style="display:flex; gap:12px; padding:14px 0; border-bottom:1px solid var(--line); animation:rise .25s ease-out">
+              <div style="width:60px; height:60px; flex:none; border-radius:12px; overflow:hidden; background:var(--img-bg)"><div style="{{ l.bgFill }}"></div></div>
+              <div style="flex:1; min-width:0">
+                <div style="display:flex; justify-content:space-between; gap:8px">
+                  <div style="font-weight:700; font-size:15px; line-height:1.25">{{ l.name }}</div>
+                  <div style="font-weight:700; font-size:15px; font-variant-numeric:tabular-nums; white-space:nowrap">{{ l.totalLabel }}</div>
+                </div>
+                <sc-if value="{{ l.hasMods }}"><div style="font-size:13px; color:var(--muted); line-height:1.4; margin-top:2px">{{ l.modsText }}</div></sc-if>
+                <sc-if value="{{ l.hasNotes }}"><div style="font-size:13px; font-style:italic; color:var(--muted); margin-top:2px">“{{ l.notes }}”</div></sc-if>
+                <div style="font-size:12.5px; color:var(--muted); margin-top:2px">{{ l.unitLabel }} c/u</div>
+                <div style="display:flex; align-items:center; gap:14px; margin-top:10px">
+                  <div style="display:flex; align-items:center; border:1px solid var(--line-strong); border-radius:20px; height:36px">
+                    <button onClick="{{ l.dec }}" aria-label="Menos" style="width:36px; height:34px; border:none; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M5 12h14"></path></svg></button>
+                    <span style="min-width:20px; text-align:center; font-weight:700; font-size:14px">{{ l.qty }}</span>
+                    <button onClick="{{ l.inc }}" aria-label="Más" style="width:36px; height:34px; border:none; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 5v14M5 12h14"></path></svg></button>
+                  </div>
+                  <button onClick="{{ l.edit }}" style="border:none; background:transparent; padding:6px 0; font-size:13px; font-weight:600; text-decoration:underline; text-underline-offset:3px; cursor:pointer">Editar</button>
+                  <button onClick="{{ l.remove }}" style="border:none; background:transparent; padding:6px 0; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer">Eliminar</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ hasCart }}">
+          <div style="padding:16px 20px 20px; border-top:1px solid var(--line); background:var(--surface)">
+            <div style="display:flex; justify-content:space-between; font-size:14px; padding:3px 0"><span style="color:var(--muted)">Subtotal</span><span style="font-variant-numeric:tabular-nums">{{ subtotalLabel }}</span></div>
+            <sc-for list="{{ totals.appliedView }}" as="ap">
+              <div style="display:flex; justify-content:space-between; font-size:14px; padding:3px 0; color:var(--brand2)"><span>{{ ap.name }}</span><span>−{{ ap.label }}</span></div>
+            </sc-for>
+            <sc-if value="{{ hasTax }}"><div style="display:flex; justify-content:space-between; font-size:14px; padding:3px 0"><span style="color:var(--muted)">{{ taxName }}</span><span>{{ taxLabel }}</span></div></sc-if>
+            <div style="display:flex; justify-content:space-between; font-size:19px; font-weight:700; padding:10px 0 14px"><span>Total</span><span style="font-variant-numeric:tabular-nums">{{ totalLabel }}</span></div>
+            <button onClick="{{ startCheckout }}" disabled="{{ cannotOrder }}" style="{{ primaryBtn }}">{{ continueLabel }}</button>
+          </div>
+        </sc-if>
+      </aside>
+    </sc-if>
+
+    <sc-if value="{{ hasPd }}">
+      <div onClick="{{ closePd }}" style="position:absolute; inset:0; z-index:60; background:rgba(15,12,10,.5); animation:fadeIn .2s"></div>
+      <div style="{{ pdWrapStyle }}">
+        <div style="{{ pdImgStyle }}">
+          <div role="img" aria-label="{{ pd.name }}" style="{{ pd.bgFill }}"></div>
+          <button onClick="{{ closePd }}" aria-label="Cerrar" style="position:absolute; top:14px; right:14px; width:44px; height:44px; border-radius:50%; border:none; background:rgba(255,255,255,.92); color:#1a1a1a; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,.15)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+          </button>
+        </div>
+        <div style="flex:1; min-width:0; display:flex; flex-direction:column; min-height:0">
+          <div style="flex:1; overflow-y:auto; overflow-x:hidden; padding:22px 22px 8px">
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px">
+              <sc-if value="{{ pd.hasBadge }}"><span style="{{ pd.badgeInline }}">{{ pd.badgeLabel }}</span></sc-if>
+              <sc-for list="{{ pd.tags }}" as="t"><span style="padding:4px 9px; border-radius:20px; border:1px solid var(--line-strong); font-size:12px; font-weight:600">{{ t }}</span></sc-for>
+            </div>
+            <h2 style="margin:0; font-family:var(--fd); font-weight:400; font-size:32px; line-height:1.02; letter-spacing:-.015em">{{ pd.name }}</h2>
+            <p style="margin:10px 0 0; font-size:15px; line-height:1.5; color:var(--muted)">{{ pd.description }}</p>
+            <div style="display:flex; align-items:baseline; gap:10px; margin-top:12px">
+              <span style="font-size:20px; font-weight:700">{{ pd.priceLabel }}</span>
+              <sc-if value="{{ pd.hasCompare }}"><span style="text-decoration:line-through; color:var(--muted)">{{ pd.compareLabel }}</span></sc-if>
+            </div>
+            <sc-if value="{{ pd.soldOut }}">
+              <div style="margin-top:16px; padding:12px 14px; border-radius:12px; background:var(--img-bg); font-weight:600; font-size:14px">Agotado temporalmente. Vuelve más tarde.</div>
+            </sc-if>
+
+            <sc-for list="{{ pd.groups }}" as="g">
+              <div style="margin-top:22px; padding-top:18px; border-top:1px solid var(--line)">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px">
+                  <div>
+                    <div style="font-weight:700; font-size:16px">{{ g.name }}</div>
+                    <div style="font-size:13px; color:var(--muted); margin-top:2px">{{ g.hint }}</div>
+                  </div>
+                  <span style="{{ g.pillStyle }}">{{ g.reqLabel }}</span>
+                </div>
+                <sc-for list="{{ g.options }}" as="op">
+                  <button onClick="{{ op.onPick }}" style="width:100%; display:flex; align-items:center; gap:12px; min-height:50px; padding:8px 2px; border:none; border-bottom:1px solid var(--line); background:transparent; cursor:pointer; text-align:left">
+                    <span style="{{ op.indStyle }}"><sc-if value="{{ op.selected }}"><span style="{{ op.dotStyle }}"></span></sc-if></span>
+                    <span style="flex:1; font-size:15px">{{ op.name }}</span>
+                    <span style="font-size:14px; color:var(--muted); font-variant-numeric:tabular-nums">{{ op.priceLabel }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-for>
+
+            <sc-if value="{{ notesEnabled }}">
+              <div style="margin-top:22px; padding-top:18px; border-top:1px solid var(--line)">
+                <label style="font-weight:700; font-size:16px; display:block; margin-bottom:8px">Notas especiales</label>
+                <textarea value="{{ pd.notes }}" onChange="{{ pdNotes }}" rows="2" placeholder="Ej. sin azúcar" style="width:100%; resize:none; padding:12px 14px; border-radius:12px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); font-size:16px; outline:none"></textarea>
+              </div>
+            </sc-if>
+            <div style="height:12px"></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; padding:14px 22px 18px; border-top:1px solid var(--line); background:var(--surface)">
+            <div style="display:flex; align-items:center; border:1px solid var(--line-strong); border-radius:26px; height:52px; flex:none">
+              <button onClick="{{ pdDec }}" aria-label="Menos" style="width:46px; height:50px; border:none; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M5 12h14"></path></svg></button>
+              <span style="min-width:22px; text-align:center; font-weight:700; font-size:16px">{{ pd.qty }}</span>
+              <button onClick="{{ pdInc }}" aria-label="Más" style="width:46px; height:50px; border:none; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 5v14M5 12h14"></path></svg></button>
+            </div>
+            <button onClick="{{ addToCart }}" style="{{ pdCtaStyle }}">{{ pd.ctaLabel }}</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ infoOpen }}">
+      <div onClick="{{ closeInfo }}" style="position:absolute; inset:0; z-index:60; background:rgba(15,12,10,.5); animation:fadeIn .2s"></div>
+      <div style="{{ sheetStyle }}">
+        <div style="padding:24px 22px; overflow-y:auto">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px">
+            <div>
+              <div style="font-family:var(--fd); font-size:30px; line-height:1">{{ biz.name }}</div>
+              <div style="font-size:14px; color:var(--muted); margin-top:6px; line-height:1.45">{{ biz.description }}</div>
+            </div>
+            <button onClick="{{ closeInfo }}" aria-label="Cerrar" style="width:44px; height:44px; flex:none; border-radius:50%; border:1px solid var(--line); background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; margin-top:18px; font-weight:700"><span style="{{ statusDotStyle }}"></span>{{ statusText }}</div>
+          <div style="margin-top:18px; border-top:1px solid var(--line)">
+            <sc-for list="{{ hoursView }}" as="h">
+              <div style="{{ h.rowStyle }}"><span>{{ h.label }}</span><span style="text-align:right">{{ h.text }}</span></div>
+            </sc-for>
+          </div>
+          <div style="margin-top:20px; display:grid; gap:10px; font-size:14.5px">
+            <div style="display:flex; gap:10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" style="flex:none"><path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg><span>{{ biz.address }}</span></div>
+            <div style="display:flex; gap:18px; flex-wrap:wrap; padding-left:28px; font-weight:600">
+              <a href="{{ biz.maps }}" target="_blank" rel="noopener">Cómo llegar</a>
+              <span>{{ biz.instagram }}</span>
+              <span>{{ biz.phone }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ inCheckout }}">
+      <div style="position:absolute; inset:0; z-index:80; background:var(--bg); color:var(--ink); display:flex; flex-direction:column; animation:rise .25s ease-out">
+        <div style="border-bottom:1px solid var(--line)">
+          <div style="max-width:620px; margin:0 auto; padding:12px 16px; display:flex; align-items:center; gap:12px">
+            <sc-if value="{{ showBack }}">
+              <button onClick="{{ back }}" aria-label="Atrás" style="width:44px; height:44px; border-radius:50%; border:1px solid var(--line); background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 6-6 6 6 6"></path></svg></button>
+            </sc-if>
+            <div style="flex:1; font-weight:700; font-size:16px">{{ stepTitle }}</div>
+            <sc-if value="{{ showSteps }}">
+              <div style="display:flex; gap:6px">
+                <sc-for list="{{ stepDots }}" as="d"><span style="{{ d.style }}"></span></sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="flex:1; overflow-y:auto; overflow-x:hidden">
+          <div style="max-width:620px; margin:0 auto; padding:24px 16px 40px">
+
+            <sc-if value="{{ stepMode }}">
+              <h1 style="margin:0; font-family:var(--fd); font-weight:400; font-size:34px; line-height:1.02; letter-spacing:-.015em; text-wrap:balance">¿Cómo quieres recibir tu pedido?</h1>
+              <div style="display:grid; gap:12px; margin-top:24px">
+                <sc-for list="{{ modeCards }}" as="m">
+                  <button onClick="{{ m.onPick }}" style="{{ m.style }}">
+                    <div style="{{ m.iconStyle }}">
+                      <sc-if value="{{ m.isDine }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3v7a2 2 0 0 0 4 0V3M7 10v11M17 21V3c-2.5 1.5-3.5 4-3.5 8H17"></path></svg></sc-if>
+                      <sc-if value="{{ m.isPickup }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"><path d="M5.5 8h13l-1 12h-11z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg></sc-if>
+                    </div>
+                    <div style="flex:1; text-align:left">
+                      <div style="font-family:var(--fd); font-size:24px; line-height:1.05">{{ m.title }}</div>
+                      <div style="font-size:14px; color:var(--muted); margin-top:4px">{{ m.desc }}</div>
+                    </div>
+                    <span style="{{ m.radioStyle }}"><sc-if value="{{ m.selected }}"><span style="width:10px; height:10px; border-radius:50%; background:var(--on-brand)"></span></sc-if></span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ stepInfo }}">
+              <h1 style="margin:0; font-family:var(--fd); font-weight:400; font-size:34px; line-height:1.02; letter-spacing:-.015em">{{ infoTitle }}</h1>
+              <div style="font-size:15px; color:var(--muted); margin-top:8px">{{ infoSub }}</div>
+              <div style="display:grid; gap:18px; margin-top:24px">
+                <div>
+                  <label style="display:block; font-weight:700; font-size:14px; margin-bottom:6px">Nombre</label>
+                  <input value="{{ form.name }}" onChange="{{ setName }}" placeholder="¿A nombre de quién?" autoComplete="name" style="{{ inputStyleName }}">
+                  <sc-if value="{{ errors.name }}"><div style="color:#B3261E; font-size:13px; margin-top:6px; font-weight:600">{{ errors.name }}</div></sc-if>
+                </div>
+                <sc-if value="{{ isDine }}">
+                  <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px">
+                    <div>
+                      <label style="display:block; font-weight:700; font-size:14px; margin-bottom:6px">Número de mesa</label>
+                      <input value="{{ form.table }}" onChange="{{ setTable }}" inputMode="numeric" placeholder="Ej. 7" style="{{ inputStyleTable }}">
+                      <sc-if value="{{ errors.table }}"><div style="color:#B3261E; font-size:13px; margin-top:6px; font-weight:600">{{ errors.table }}</div></sc-if>
+                    </div>
+                    <sc-if value="{{ askGuests }}">
+                      <div>
+                        <label style="display:block; font-weight:700; font-size:14px; margin-bottom:6px">Personas <span style="font-weight:500; color:var(--muted)">(opcional)</span></label>
+                        <div style="display:flex; align-items:center; justify-content:space-between; height:52px; border:1px solid var(--line-strong); border-radius:14px; background:var(--surface); padding:0 4px">
+                          <button onClick="{{ guestsDec }}" aria-label="Menos" style="width:44px; height:44px; border:none; background:transparent; cursor:pointer; font-size:20px">−</button>
+                          <span style="font-weight:700">{{ form.guests }}</span>
+                          <button onClick="{{ guestsInc }}" aria-label="Más" style="width:44px; height:44px; border:none; background:transparent; cursor:pointer; font-size:20px">+</button>
+                        </div>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ isPickup }}">
+                  <div>
+                    <label style="display:block; font-weight:700; font-size:14px; margin-bottom:6px">Teléfono</label>
+                    <input value="{{ form.phone }}" onChange="{{ setPhone }}" inputMode="tel" autoComplete="tel" placeholder="10 dígitos" style="{{ inputStylePhone }}">
+                    <sc-if value="{{ errors.phone }}"><div style="color:#B3261E; font-size:13px; margin-top:6px; font-weight:600">{{ errors.phone }}</div></sc-if>
+                  </div>
+                  <sc-if value="{{ scheduleEnabled }}">
+                    <div>
+                      <label style="display:block; font-weight:700; font-size:14px; margin-bottom:8px">Hora aproximada de recogida</label>
+                      <div style="display:flex; flex-wrap:wrap; gap:8px">
+                        <sc-for list="{{ pickupChips }}" as="c"><button onClick="{{ c.onPick }}" style="{{ c.style }}">{{ c.label }}</button></sc-for>
+                      </div>
+                      <sc-if value="{{ customTime }}">
+                        <input type="time" value="{{ form.pickupTime }}" onChange="{{ setPickupTime }}" style="margin-top:10px; height:52px; padding:0 14px; border-radius:14px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); font-size:16px">
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                </sc-if>
+                <sc-if value="{{ notesEnabled }}">
+                  <div>
+                    <label style="display:block; font-weight:700; font-size:14px; margin-bottom:6px">Notas del pedido <span style="font-weight:500; color:var(--muted)">(opcional)</span></label>
+                    <textarea value="{{ form.notes }}" onChange="{{ setNotes }}" rows="3" placeholder="Alergias, cubiertos, algo que debamos saber" style="width:100%; resize:none; padding:14px; border-radius:14px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); font-size:16px; outline:none"></textarea>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ stepConfirm }}">
+              <h1 style="margin:0; font-family:var(--fd); font-weight:400; font-size:34px; line-height:1.02; letter-spacing:-.015em">Revisa tu pedido</h1>
+              <div style="margin-top:20px; border-radius:18px; background:var(--surface); border:1px solid var(--line); overflow:hidden">
+                <div style="padding:18px 20px; display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px dashed var(--line-strong)">
+                  <div style="font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)">Pedido</div>
+                  <div style="font-family:var(--fd); font-size:26px">#{{ nextNumber }}</div>
+                </div>
+                <div style="padding:6px 20px">
+                  <sc-for list="{{ lines }}" as="l">
+                    <div style="display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--line)">
+                      <span style="font-weight:700; min-width:26px">{{ l.qty }}×</span>
+                      <div style="flex:1; min-width:0">
+                        <div style="font-weight:600">{{ l.name }}</div>
+                        <sc-if value="{{ l.hasMods }}"><div style="font-size:13px; color:var(--muted)">{{ l.modsText }}</div></sc-if>
+                        <sc-if value="{{ l.hasNotes }}"><div style="font-size:13px; color:var(--muted); font-style:italic">“{{ l.notes }}”</div></sc-if>
+                      </div>
+                      <span style="font-weight:600; font-variant-numeric:tabular-nums">{{ l.totalLabel }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="padding:14px 20px; display:grid; gap:8px; font-size:14.5px; border-bottom:1px dashed var(--line-strong)">
+                  <sc-for list="{{ confirmRows }}" as="r">
+                    <div style="display:flex; justify-content:space-between; gap:16px"><span style="color:var(--muted)">{{ r.k }}</span><span style="font-weight:600; text-align:right">{{ r.v }}</span></div>
+                  </sc-for>
+                </div>
+                <div style="padding:14px 20px 18px; display:grid; gap:6px; font-size:14.5px">
+                  <div style="display:flex; justify-content:space-between"><span style="color:var(--muted)">Subtotal</span><span>{{ subtotalLabel }}</span></div>
+                  <sc-for list="{{ totals.appliedView }}" as="ap"><div style="display:flex; justify-content:space-between; color:var(--brand2)"><span>{{ ap.name }}</span><span>−{{ ap.label }}</span></div></sc-for>
+                  <sc-if value="{{ hasTax }}"><div style="display:flex; justify-content:space-between"><span style="color:var(--muted)">{{ taxName }}</span><span>{{ taxLabel }}</span></div></sc-if>
+                  <div style="display:flex; justify-content:space-between; font-size:20px; font-weight:700; margin-top:6px"><span>Total</span><span>{{ totalLabel }}</span></div>
+                </div>
+              </div>
+              <button onClick="{{ togglePreview }}" style="margin-top:14px; border:none; background:transparent; padding:8px 0; font-weight:600; font-size:14px; text-decoration:underline; text-underline-offset:3px; cursor:pointer">{{ previewLabel }}</button>
+              <sc-if value="{{ showPreview }}">
+                <pre style="margin:6px 0 0; padding:16px; border-radius:14px; background:#E4F3E6; color:#10301A; font-family:ui-monospace, Menlo, monospace; font-size:12.5px; line-height:1.5; white-space:pre-wrap; animation:rise .2s">{{ messagePreview }}</pre>
+              </sc-if>
+            </sc-if>
+
+            <sc-if value="{{ stepSent }}">
+              <div style="text-align:center; padding-top:12px; animation:rise .35s ease-out">
+                <div style="width:72px; height:72px; margin:0 auto; border-radius:50%; background:#128C4A; color:#fff; display:flex; align-items:center; justify-content:center">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5 9-10"></path></svg>
+                </div>
+                <h1 style="margin:18px 0 0; font-family:var(--fd); font-weight:400; font-size:34px; line-height:1.05">Pedido #{{ sent.num }} listo</h1>
+                <p style="margin:10px auto 0; max-width:380px; font-size:15px; line-height:1.5; color:var(--muted)">Abrimos WhatsApp con tu pedido. Solo presiona enviar para que {{ biz.name }} lo reciba.</p>
+              </div>
+              <div style="margin-top:26px; border-radius:18px; overflow:hidden; border:1px solid var(--line)">
+                <div style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:#0F5A36; color:#fff">
+                  <div style="width:34px; height:34px; border-radius:50%; background:var(--brand); color:var(--on-brand); display:flex; align-items:center; justify-content:center; font-family:var(--fd)">{{ biz.logoText }}</div>
+                  <div><div style="font-weight:700; font-size:14.5px">{{ biz.name }}</div><div style="font-size:12px; opacity:.8">+{{ waNumber }}</div></div>
+                </div>
+                <div style="padding:16px; background:#ECE5DD">
+                  <div style="margin-left:auto; max-width:92%; padding:10px 12px 8px; border-radius:12px 2px 12px 12px; background:#D9FDD3; color:#111B21; font-size:13.5px; line-height:1.45; white-space:pre-wrap; box-shadow:0 1px 1px rgba(0,0,0,.08)">{{ sent.message }}</div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--line); background:var(--surface)">
+          <div style="max-width:620px; margin:0 auto; padding:14px 16px 18px">
+            <sc-if value="{{ stepConfirm }}">
+              <button onClick="{{ sendOrder }}" style="width:100%; height:58px; border:none; border-radius:29px; background:#128C4A; color:#fff; font-weight:700; font-size:16px; display:flex; align-items:center; justify-content:center; gap:10px; cursor:pointer; transition:transform .12s" style-active="transform:scale(.98)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinejoin="round"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"></path></svg>
+                Enviar pedido por WhatsApp
+              </button>
+              <div style="text-align:center; font-size:13px; color:var(--muted); margin-top:10px">Tu pedido se enviará directamente al WhatsApp del negocio.</div>
+            </sc-if>
+            <sc-if value="{{ stepSent }}">
+              <div style="display:grid; gap:10px">
+                <a href="{{ sent.url }}" target="_blank" rel="noopener" style="height:54px; border-radius:27px; background:#128C4A; color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; text-decoration:none">Abrir WhatsApp otra vez</a>
+                <button onClick="{{ finish }}" style="height:54px; border-radius:27px; border:1px solid var(--ink); background:transparent; font-weight:700; cursor:pointer">Volver al menú</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ stepForm }}">
+              <button onClick="{{ next }}" style="{{ primaryBtn }}">{{ nextLabel }}</button>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ toast }}">
+      <div style="position:absolute; left:50%; bottom:var(--toast-b, 88px); z-index:95; transform:translateX(-50%); display:flex; align-items:center; gap:10px; padding:8px 16px 8px 8px; border-radius:30px; background:var(--ink); color:var(--bg); font-size:14px; font-weight:600; white-space:nowrap; box-shadow:0 10px 30px rgba(0,0,0,.25); animation:toastIn .25s ease-out">
+        <span style="width:30px; height:30px; border-radius:50%; background:var(--brand); color:var(--on-brand); display:flex; align-items:center; justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5 9-10"></path></svg></span>
+        {{ toast }}
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;viewport&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;fluid&quot;,&quot;390&quot;,&quot;768&quot;,&quot;1440&quot;],&quot;default&quot;:&quot;fluid&quot;,&quot;tsType&quot;:&quot;'fluid'|'390'|'768'|'1440'&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;demoState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;real&quot;,&quot;closed&quot;,&quot;paused&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;default&quot;:&quot;real&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;mesa&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;cardStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;&quot;,&quot;minimal&quot;,&quot;rounded&quot;,&quot;editorial&quot;,&quot;image-heavy&quot;,&quot;compact&quot;,&quot;premium&quot;],&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Override de Apariencia&quot;},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;&quot;,&quot;grid&quot;,&quot;list&quot;,&quot;large&quot;,&quot;compact&quot;],&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Override de Apariencia&quot;}}">
+class Component extends DCLogic {
+  state = {
+    data: null, loading: true, width: 390, activeCat: null, search: '', searchOpen: false,
+    pd: null, cartOpen: false, infoOpen: false, cart: [], step: null, mode: null,
+    form: { name: '', phone: '', table: '', guests: 2, pickupChoice: 'asap', pickupTime: '', notes: '' },
+    errors: {}, sent: null, toast: null, bump: 0, errorDismissed: false, showPreview: false,
+  };
+  secEls = {}; refCbs = {};
+
+  componentDidMount() {
+    const boot = () => {
+      if (!window.MenuStore) return setTimeout(boot, 30);
+      let cart = [];
+      try { cart = JSON.parse(localStorage.getItem('menu-digital.cart') || '[]'); } catch (e) {}
+      const mesa = new URLSearchParams(location.search).get('mesa') || this.props.mesa || '';
+      this.setState({ data: MenuStore.load(), cart, form: { ...this.state.form, table: mesa } });
+      this.unsub = MenuStore.subscribe((d) => this.setState({ data: d }));
+      setTimeout(() => this.setState({ loading: false }), 650);
+    };
+    boot();
+    this.imgErr = (e) => { if (e.target && e.target.tagName === 'IMG') e.target.style.visibility = 'hidden'; };
+    document.addEventListener('error', this.imgErr, true);
+    this.onResize = () => this.setState({ width: window.innerWidth });
+    window.addEventListener('resize', this.onResize);
+    this.onResize();
+  }
+  componentWillUnmount() { this.imgErr && document.removeEventListener('error', this.imgErr, true); this.unsub && this.unsub(); window.removeEventListener('resize', this.onResize); clearTimeout(this.toastT); }
+
+  frameRef = (el) => { this.frame = el; };
+  scrollerRef = (el) => { this.scroller = el; };
+  chipsRef = (el) => { this.chips = el; };
+  searchRef = (el) => { if (el && !this.searchEl) setTimeout(() => el.focus(), 50); this.searchEl = el; };
+  secRef(id) {
+    if (!this.refCbs[id]) this.refCbs[id] = (el) => { if (el) this.secEls[id] = el; else delete this.secEls[id]; };
+    return this.refCbs[id];
+  }
+
+  headerOffset() { const h = this.scroller && this.scroller.querySelector('header'); return (h ? h.offsetHeight : 100) + 8; }
+  scrollToCat(id) {
+    const el = this.secEls[id], sc = this.scroller; if (!el || !sc) return;
+    const top = el.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - this.headerOffset() + 12;
+    this.lockSpy = Date.now();
+    sc.scrollTo({ top, behavior: 'smooth' });
+    this.setState({ activeCat: id }, () => this.centerChip(id));
+  }
+  centerChip(id) {
+    const c = this.chips; if (!c) return;
+    const b = c.querySelector('[data-chip="' + id + '"]');
+    if (b) c.scrollTo({ left: b.offsetLeft - c.clientWidth / 2 + b.offsetWidth / 2, behavior: 'smooth' });
+  }
+  onScroll = () => {
+    if (this.lockSpy && Date.now() - this.lockSpy < 700) return;
+    if (this.raf) return;
+    this.raf = requestAnimationFrame(() => {
+      this.raf = null;
+      const sc = this.scroller; if (!sc) return;
+      const off = this.headerOffset() + 30, base = sc.getBoundingClientRect().top;
+      let cur = null;
+      (this.navIds || []).forEach((id) => { const el = this.secEls[id]; if (el && el.getBoundingClientRect().top - base <= off) cur = id; });
+      cur = cur || (this.navIds || [])[0];
+      if (cur && cur !== this.state.activeCat) this.setState({ activeCat: cur }, () => this.centerChip(cur));
+    });
+  };
+
+  saveCart(cart) { try { localStorage.setItem('menu-digital.cart', JSON.stringify(cart)); } catch (e) {} this.setState({ cart }); }
+  showToast(msg) { clearTimeout(this.toastT); this.setState({ toast: msg }); this.toastT = setTimeout(() => this.setState({ toast: null }), 1900); }
+
+  groupsFor(p) { const d = this.state.data; return (p.modifierGroupIds || []).map((id) => d.modifierGroups.find((g) => g.id === id)).filter(Boolean); }
+  defaults(p) { const sel = {}; this.groupsFor(p).forEach((g) => { const def = g.options.filter((o) => o.isDefault).map((o) => o.id); if (def.length) sel[g.id] = def; }); return sel; }
+  openProduct(p, line) {
+    this.setState({ pd: { id: p.id, sel: line ? JSON.parse(JSON.stringify(line.sel)) : this.defaults(p), qty: line ? line.qty : 1, notes: line ? line.notes : '', editId: line ? line.id : null, showErr: false }, cartOpen: this.isDesktop() ? this.state.cartOpen : false });
+  }
+  isDesktop() { const v = this.props.viewport; return (v && v !== 'fluid' ? Number(v) : this.state.width) >= 1100; }
+  pick(g, o) {
+    const pd = { ...this.state.pd, sel: { ...this.state.pd.sel } };
+    const cur = pd.sel[g.id] || [];
+    if (g.type === 'single') pd.sel[g.id] = cur[0] === o.id && !g.required ? [] : [o.id];
+    else {
+      if (cur.includes(o.id)) pd.sel[g.id] = cur.filter((x) => x !== o.id);
+      else if (!g.max || cur.length < g.max) pd.sel[g.id] = [...cur, o.id];
+    }
+    this.setState({ pd });
+  }
+  missing(p, sel) { return this.groupsFor(p).filter((g) => g.required && !(sel[g.id] || []).length); }
+  commitLine(p, sel, qty, notes, editId) {
+    const U = window.MenuUtils, d = this.state.data;
+    const line = { id: editId || 'l' + Date.now().toString(36), productId: p.id, categoryId: p.categoryId, name: p.name, image: p.image, qty, sel, notes: notes.trim(), unit: U.lineUnitPrice(d, p, sel), mods: U.describeSelections(d, p, sel) };
+    let cart = [...this.state.cart];
+    if (editId) cart = cart.map((l) => (l.id === editId ? line : l));
+    else {
+      const same = cart.find((l) => l.productId === p.id && JSON.stringify(l.sel) === JSON.stringify(sel) && l.notes === line.notes);
+      if (same) cart = cart.map((l) => (l === same ? { ...l, qty: l.qty + qty } : l)); else cart.push(line);
+    }
+    this.saveCart(cart);
+    this.setState((s) => ({ bump: s.bump + 1 }));
+    this.showToast(editId ? 'Producto actualizado' : 'Agregado · ' + p.name);
+  }
+
+  status() {
+    const U = window.MenuUtils, ds = this.props.demoState;
+    if (ds === 'closed') return { key: 'closed', label: 'Cerrado', canOrder: false, next: 'hoy a las 17:00' };
+    if (ds === 'paused') return { key: 'paused', label: 'Pedidos en pausa', canOrder: false };
+    return U.businessStatus(this.state.data);
+  }
+
+  validate() {
+    const f = this.state.form, e = {};
+    if (f.name.trim().length < 2) e.name = 'Escribe tu nombre.';
+    if (this.state.mode === 'dinein' && !String(f.table).trim()) e.table = 'Indica tu mesa.';
+    if (this.state.mode === 'pickup' && f.phone.replace(/\D/g, '').length < 10) e.phone = 'Escribe un teléfono de 10 dígitos.';
+    this.setState({ errors: e });
+    return !Object.keys(e).length;
+  }
+  pickupTimeValue() {
+    const f = this.state.form, now = new Date();
+    const add = (m) => { const t = new Date(now.getTime() + m * 60000); return String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0'); };
+    if (f.pickupChoice === 'asap') return 'Lo antes posible (~' + add(15) + ')';
+    if (f.pickupChoice === '30') return add(30);
+    if (f.pickupChoice === '60') return add(60);
+    return f.pickupTime || 'Por confirmar';
+  }
+  buildOrder() {
+    const U = window.MenuUtils, d = this.state.data, f = this.state.form, t = U.cartTotals(d, this.state.cart);
+    const pickup = this.state.mode === 'pickup';
+    return {
+      number: d.orderCounter + 1, mode: this.state.mode,
+      customer: { name: f.name.trim(), phone: pickup ? f.phone.trim() : '', table: pickup ? null : String(f.table).trim(), guests: !pickup && d.settings.askGuests ? f.guests : null, pickupTime: pickup && d.settings.scheduleEnabled ? this.pickupTimeValue() : null },
+      items: this.state.cart.map((l) => ({ productId: l.productId, name: l.name, qty: l.qty, unit: l.unit, mods: l.mods, notes: l.notes })),
+      notes: d.settings.notesEnabled ? f.notes.trim() : '', subtotal: t.subtotal, discount: t.discount, tax: t.tax, total: t.total,
+    };
+  }
+  sendOrder = () => {
+    const U = window.MenuUtils, d = this.state.data, order = this.buildOrder();
+    const message = U.generateWhatsAppMessage(order, d);
+    const url = U.openWhatsApp(message, d.settings.whatsappNumber);
+    const now = new Date();
+    const rec = { id: 'ord_' + order.number, number: order.number, time: String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'), date: now.toISOString().slice(0, 10), mode: order.mode, customer: order.customer,
+      items: order.items.map((i) => ({ productId: i.productId, qty: i.qty, mods: i.mods.join(' · '), unit: i.unit, total: i.unit * i.qty, notes: i.notes })), notes: order.notes, subtotal: order.subtotal, discount: order.discount, total: order.total, status: 'pending', source: 'whatsapp', isNew: true };
+    const nd = { ...d, orderCounter: order.number, orders: [rec, ...d.orders] };
+    MenuStore.save(nd);
+    this.saveCart([]);
+    this.setState({ data: nd, step: 'sent', sent: { num: U.pad(order.number), message, url } });
+  };
+
+  renderVals() {
+    const U = window.MenuUtils, d = this.state.data, S = this.state, P = this.props;
+    const vp = P.viewport || 'fluid';
+    const fixedW = vp === 'fluid' ? null : Number(vp);
+    const w = fixedW || S.width, mob = w < 700, desk = w >= 1100, tab = !mob && !desk;
+    const theme = d ? d.theme : { background: '#F5EFE6', text: '#1F1B16', primary: '#B4532A', secondary: '#2F4A3A', accent: '#E3A63B', fontPair: 'editorial', cardStyle: 'editorial', layout: 'grid' };
+    const lum = (hex) => { const h = (hex || '#000').replace('#', ''); const n = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h, 16); const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255; return (0.299 * r + 0.587 * g + 0.114 * b) / 255; };
+    const dark = lum(theme.background) < 0.45;
+    const fonts = (U && U.FONT_PAIRS[theme.fontPair]) || { display: "'Gloock', Georgia, serif", body: "'Hanken Grotesk', system-ui, sans-serif" };
+    const cs = P.cardStyle || theme.cardStyle, layout = P.layout || theme.layout;
+    const CS = {
+      minimal: { r: '8px', img: '6px', sh: 'none', bd: 'none', ratio: '1/1', pad: '10px 2px 4px', tf: 'var(--fb)', ts: '15.5px', tw: 600, surf: 'transparent', ls: '0' },
+      rounded: { r: '22px', img: '0px', sh: '0 8px 28px rgba(0,0,0,.08)', bd: 'none', ratio: '1/1', pad: '14px 16px 16px', tf: 'var(--fb)', ts: '16px', tw: 700, surf: 'var(--surface)', ls: '0' },
+      editorial: { r: '2px', img: '2px', sh: 'none', bd: 'none', ratio: '4/5', pad: '12px 0 4px', tf: 'var(--fd)', ts: mob ? '20px' : '22px', tw: 400, surf: 'transparent', ls: '-.01em' },
+      'image-heavy': { r: '16px', img: '16px', sh: 'none', bd: 'none', ratio: '3/4', pad: '12px', tf: 'var(--fd)', ts: '20px', tw: 400, surf: 'transparent', ls: '0' },
+      compact: { r: '12px', img: '0px', sh: 'none', bd: '1px solid var(--line)', ratio: '4/3', pad: '10px 12px 12px', tf: 'var(--fb)', ts: '14.5px', tw: 700, surf: 'var(--surface)', ls: '0' },
+      premium: { r: '0px', img: '0px', sh: 'none', bd: '1px solid var(--line-strong)', ratio: '1/1', pad: '16px 16px 18px', tf: 'var(--fd)', ts: '19px', tw: 400, surf: 'var(--surface)', ls: '.02em', tt: 'uppercase' },
+    }[cs] || {};
+    const isRows = layout === 'list' || layout === 'compact';
+    const overlay = cs === 'image-heavy' && !isRows;
+    const cols = isRows ? (mob ? 1 : 2) : layout === 'large' ? (mob ? 1 : 2) : mob ? 2 : tab ? 3 : 3;
+    const cartW = desk ? 380 : 0;
+    const frameStyle = {
+      position: 'relative', width: fixedW ? fixedW + 'px' : '100%', flex: 'none', maxWidth: fixedW ? 'none' : '100%', height: '100%', overflow: 'hidden',
+      background: theme.background, color: theme.text, fontFamily: fonts.body, fontSize: '15px', lineHeight: 1.4,
+      boxShadow: fixedW ? '0 0 0 1px rgba(0,0,0,.08), 0 20px 60px rgba(0,0,0,.12)' : 'none',
+      '--bg': theme.background, '--ink': theme.text, '--brand': theme.primary, '--brand2': theme.secondary, '--accent': theme.accent,
+      '--on-brand': lum(theme.primary) > 0.6 ? '#1a1a1a' : '#ffffff',
+      '--surface': dark ? 'color-mix(in oklab, ' + theme.background + ', white 7%)' : 'color-mix(in oklab, ' + theme.background + ', white 65%)',
+      '--muted': 'color-mix(in oklab, ' + theme.text + ' 66%, ' + theme.background + ')',
+      '--line': 'color-mix(in oklab, ' + theme.text + ' 11%, transparent)', '--line-strong': 'color-mix(in oklab, ' + theme.text + ' 22%, transparent)',
+      '--img-bg': 'color-mix(in oklab, ' + theme.primary + ' 14%, ' + theme.background + ')', '--hover-bg': 'color-mix(in oklab, ' + theme.text + ' 4%, transparent)',
+      '--fd': fonts.display, '--fb': fonts.body,
+      '--gutter': mob ? '16px' : desk ? '36px' : '28px', '--maxw': desk ? '1240px' : '1000px', '--cart-w': cartW + 'px',
+      '--hero-h': mob ? '230px' : '300px', '--hero-fs': mob ? '32px' : '46px', '--hero-radius': cs === 'premium' || cs === 'editorial' ? '4px' : '20px', '--sec-fs': mob ? '28px' : '34px',
+      '--strip-w': mob ? '230px' : '260px', '--c-radius-strip': CS.r === '0px' ? '0px' : '18px',
+      '--c-radius': CS.r, '--c-img-radius': CS.img, '--c-shadow': CS.sh, '--c-border': CS.bd, '--c-ratio': CS.ratio, '--c-pad': CS.pad, '--c-tf': CS.tf, '--c-ts': CS.ts, '--c-tw': CS.tw, '--c-surface': CS.surf, '--c-ls': CS.ls, '--c-tt': CS.tt || 'none',
+      '--r-thumb': layout === 'compact' ? '64px' : mob ? '96px' : '112px', '--r-ts': layout === 'compact' ? '15px' : '17px', '--r-pad': CS.surf === 'transparent' ? '14px 0' : '14px', '--r-radius': CS.surf === 'transparent' ? '0px' : CS.r, '--r-img-radius': CS.r === '0px' ? '0px' : '12px',
+      '--toast-b': desk ? '28px' : '90px',
+    };
+    const base = { frameRef: this.frameRef, scrollerRef: this.scrollerRef, chipsRef: this.chipsRef, searchRef: this.searchRef, onScroll: this.onScroll, frameStyle, isDesktop: desk, notDesktop: !desk, notMobile: !mob,
+      onImgErr: (e) => { e.currentTarget.style.visibility = 'hidden'; } };
+    if (!d) return { ...base, isLoading: true, biz: {}, theme: {}, totals: { count: 0, appliedView: [] }, nav: [], sections: [], lines: [], showChips: true, banner: {} };
+
+    const m = (n) => U.money(n, d.settings.currency);
+    const st = this.status();
+    const ds = P.demoState;
+    const isError = ds === 'error' && !S.errorDismissed;
+    const cats = d.categories.filter((c) => c.visible).sort((a, b) => a.order - b.order);
+    const vis = ds === 'empty' ? [] : d.products.filter((p) => p.status === 'published' || p.status === 'soldout');
+    const BADGES = { popular: ['Popular', 'var(--brand)', 'var(--on-brand)'], nuevo: ['Nuevo', 'var(--brand2)', '#fff'], especial: ['Especial', 'var(--accent)', '#1b1408'], recomendado: ['Recomendado', 'var(--ink)', 'var(--bg)'], agotado: ['Agotado', '#5b5650', '#fff'] };
+    const bg = (url, extra) => ({ backgroundImage: url ? 'url("' + url + '")' : 'none', backgroundSize: 'cover', backgroundPosition: 'center', ...extra });
+    const view = (p) => {
+      const ep = U.effectivePrice(d, p);
+      const soldOut = p.status === 'soldout';
+      const bk = soldOut ? 'agotado' : p.badge; const b = bk && BADGES[bk];
+      const hasReq = this.groupsFor(p).some((g) => g.required);
+      const pill = { padding: '4px 9px', borderRadius: CS.r === '0px' ? '0px' : '20px', fontSize: '11px', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', background: b ? b[1] : '', color: b ? b[2] : '' };
+      return { ...p, bgAbs: bg(p.image, { position: 'absolute', inset: 0 }), bgFill: bg(p.image, { width: '100%', height: '100%' }), soldOut, hasBadge: !!b, badgeLabel: b ? b[0] : '', badgeStyle: { ...pill, position: 'absolute', top: '10px', left: '10px', zIndex: 2 }, badgeInline: pill,
+        priceLabel: (p.modifierGroupIds.length && this.groupsFor(p).some((g) => g.kind === 'variant') ? 'Desde ' : '') + m(ep.price), hasCompare: !!ep.compareAt, compareLabel: ep.compareAt ? m(ep.compareAt) : '',
+        soldOutLabel: soldOut ? '· Agotado' : '', canQuick: !soldOut && st.canOrder,
+        onOpen: () => this.openProduct(p), onQuick: (e) => { e.stopPropagation(); if (hasReq) this.openProduct(p); else this.commitLine(p, this.defaults(p), 1, '', null); } };
+    };
+    const q = S.search.trim().toLowerCase();
+    const inSearch = S.searchOpen && q.length > 0;
+    let sections = [];
+    const kind = { isGrid: !isRows && !overlay, isOverlay: overlay, isRows, isStrip: false };
+    if (inSearch) {
+      const res = vis.filter((p) => (p.name + ' ' + p.description + ' ' + p.tags.join(' ')).toLowerCase().includes(q)).map(view);
+      if (res.length) sections = [{ id: 'search', name: '', hasDesc: false, countLabel: '', isEmpty: false, ...kind, items: res, ref: this.secRef('search') }];
+    } else {
+      const feat = vis.filter((p) => p.featured && p.status === 'published').map(view);
+      if (feat.length) sections.push({ id: 'destacados', name: 'Destacados', description: '', hasDesc: false, countLabel: '', isEmpty: false, isGrid: false, isOverlay: false, isRows: false, isStrip: true, items: feat, ref: this.secRef('destacados') });
+      cats.forEach((c) => {
+        const items = vis.filter((p) => p.categoryId === c.id).map(view);
+        sections.push({ id: c.id, name: c.name, description: c.description, hasDesc: !!c.description, countLabel: items.length ? items.length + (items.length === 1 ? ' producto' : ' productos') : '', isEmpty: !items.length, ...kind, ...(items.length ? {} : { isGrid: false, isOverlay: false, isRows: false }), items, ref: this.secRef(c.id) });
+      });
+    }
+    this.navIds = sections.map((s) => s.id);
+    const active = S.activeCat || this.navIds[0];
+    const nav = inSearch ? [] : sections.map((s) => ({
+      id: s.id, name: s.name, count: s.items.length || '', onClick: () => this.scrollToCat(s.id),
+      chipStyle: { flex: 'none', height: '40px', padding: '0 16px', borderRadius: CS.r === '0px' ? '0px' : '20px', border: '1px solid ' + (s.id === active ? theme.text : 'var(--line-strong)'), background: s.id === active ? theme.text : 'transparent', color: s.id === active ? theme.background : theme.text, fontWeight: 600, fontSize: '14px', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background .2s, color .2s' },
+      sideStyle: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: '42px', padding: '0 12px', border: 'none', borderRadius: '10px', background: s.id === active ? 'var(--hover-bg)' : 'transparent', fontWeight: s.id === active ? 700 : 500, fontSize: '15px', cursor: 'pointer', textAlign: 'left', boxShadow: s.id === active ? 'inset 3px 0 0 ' + theme.primary : 'none' },
+    }));
+
+    const totals = U.cartTotals(d, S.cart);
+    totals.appliedView = totals.applied.map((a) => ({ name: a.name, label: m(a.amount) }));
+    const lines = S.cart.map((l) => ({ ...l, bgFill: bg(l.image, { width: '100%', height: '100%' }), hasMods: l.mods.length > 0, modsText: l.mods.join(' · '), hasNotes: !!l.notes, unitLabel: m(l.unit), totalLabel: m(l.unit * l.qty),
+      inc: () => this.saveCart(S.cart.map((x) => (x.id === l.id ? { ...x, qty: x.qty + 1 } : x))),
+      dec: () => this.saveCart(l.qty <= 1 ? S.cart.filter((x) => x.id !== l.id) : S.cart.map((x) => (x.id === l.id ? { ...x, qty: x.qty - 1 } : x))),
+      remove: () => { this.saveCart(S.cart.filter((x) => x.id !== l.id)); this.showToast('Producto eliminado'); },
+      edit: () => { const p = d.products.find((x) => x.id === l.productId); if (p) this.openProduct(p, l); } }));
+    const hasCart = S.cart.length > 0;
+
+    const banner = st.key === 'closed' ? { show: true, title: 'Estamos cerrados.', text: st.next ? 'Abrimos ' + st.next + '. Puedes ver el menú mientras tanto.' : 'Puedes ver el menú mientras tanto.' }
+      : st.key === 'paused' ? { show: true, title: 'Por el momento no estamos tomando pedidos.', text: 'Vuelve en unos minutos. El menú sigue disponible para consulta.' } : { show: false };
+    const dotC = st.key === 'open' ? '#2E8B57' : st.key === 'paused' ? '#D08A1E' : '#B3261E';
+    const statusText = st.key === 'open' ? 'Abierto' + (st.until ? ' · hasta ' + st.until : ' ahora') : st.key === 'paused' ? 'Pedidos en pausa' : 'Cerrado' + (st.next ? ' · abre ' + st.next : '');
+
+    const primaryBtn = { width: '100%', height: '56px', border: 'none', borderRadius: CS.r === '0px' ? '0px' : '28px', background: st.canOrder ? theme.primary : 'var(--line-strong)', color: st.canOrder ? 'var(--on-brand)' : 'var(--muted)', fontWeight: 700, fontSize: '16px', letterSpacing: '.01em', cursor: st.canOrder ? 'pointer' : 'not-allowed', transition: 'transform .12s' };
+
+    const cartVisible = desk || S.cartOpen;
+    const cartPanelStyle = desk
+      ? { position: 'absolute', top: 0, right: 0, bottom: 0, width: cartW + 'px', zIndex: 35, display: 'flex', flexDirection: 'column', background: 'var(--surface)', borderLeft: '1px solid var(--line)' }
+      : mob ? { position: 'absolute', left: 0, right: 0, bottom: 0, height: '88%', zIndex: 55, display: 'flex', flexDirection: 'column', background: 'var(--bg)', borderRadius: '24px 24px 0 0', animation: 'sheetUp .32s cubic-bezier(.2,.8,.2,1)', boxShadow: '0 -10px 40px rgba(0,0,0,.2)' }
+      : { position: 'absolute', top: 0, right: 0, bottom: 0, width: '420px', zIndex: 55, display: 'flex', flexDirection: 'column', background: 'var(--bg)', animation: 'drawerIn .3s cubic-bezier(.2,.8,.2,1)', boxShadow: '-10px 0 40px rgba(0,0,0,.18)' };
+
+    let pdv = null;
+    if (S.pd) {
+      const p = d.products.find((x) => x.id === S.pd.id);
+      const v = view(p), miss = this.missing(p, S.pd.sel);
+      const unit = U.lineUnitPrice(d, p, S.pd.sel);
+      const groups = this.groupsFor(p).map((g) => {
+        const sel = S.pd.sel[g.id] || []; const err = S.pd.showErr && g.required && !sel.length;
+        return { id: g.id, name: g.name, hint: g.type === 'single' ? 'Elige 1' : 'Elige hasta ' + (g.max || g.options.length), reqLabel: err ? 'Requerido' : g.required ? 'Obligatorio' : 'Opcional',
+          pillStyle: { flex: 'none', padding: '4px 10px', borderRadius: '20px', fontSize: '11.5px', fontWeight: 700, background: err ? '#B3261E' : g.required ? theme.text : 'transparent', color: err ? '#fff' : g.required ? theme.background : 'var(--muted)', border: g.required || err ? 'none' : '1px solid var(--line-strong)' },
+          options: g.options.map((o) => { const s = sel.includes(o.id); const sq = g.type === 'multiple';
+            return { name: o.name, selected: s, priceLabel: o.price ? '+' + m(o.price) : '', onPick: () => this.pick(g, o),
+              indStyle: { width: '24px', height: '24px', flex: 'none', borderRadius: sq ? '7px' : '50%', border: '2px solid ' + (s ? theme.primary : 'var(--line-strong)'), background: s && sq ? theme.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s' },
+              dotStyle: sq ? { width: '8px', height: '12px', border: 'solid var(--on-brand)', borderWidth: '0 2.5px 2.5px 0', transform: 'rotate(45deg) translate(-1px,-1px)' } : { width: '12px', height: '12px', borderRadius: '50%', background: theme.primary } }; }) };
+      });
+      const blocked = v.soldOut || !st.canOrder;
+      const cta = v.soldOut ? 'Agotado temporalmente' : !st.canOrder ? (st.key === 'paused' ? 'Pedidos en pausa' : 'Estamos cerrados') : miss.length ? 'Elige ' + miss[0].name.toLowerCase() : (S.pd.editId ? 'Actualizar — ' : 'Agregar al carrito — ') + m(unit * S.pd.qty);
+      pdv = { ...v, groups, qty: S.pd.qty, notes: S.pd.notes, ctaLabel: cta, blocked, ready: !miss.length, p, miss };
+    }
+    const pdWrapStyle = mob
+      ? { position: 'absolute', left: 0, right: 0, bottom: 0, top: '5%', zIndex: 70, display: 'flex', flexDirection: 'column', background: 'var(--bg)', borderRadius: '24px 24px 0 0', overflow: 'hidden', animation: 'sheetUp .34s cubic-bezier(.2,.8,.2,1)' }
+      : { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 'min(920px, calc(100% - 48px))', height: 'min(640px, calc(100% - 48px))', zIndex: 70, display: 'flex', background: 'var(--bg)', borderRadius: CS.r === '0px' ? '0px' : '22px', overflow: 'hidden', boxShadow: '0 30px 80px rgba(0,0,0,.35)' };
+    const pdImgStyle = mob ? { position: 'relative', height: '34%', flex: 'none', background: 'var(--img-bg)' } : { position: 'relative', width: '46%', flex: 'none', background: 'var(--img-bg)' };
+    const pdCtaStyle = { flex: 1, height: '52px', border: 'none', borderRadius: CS.r === '0px' ? '0px' : '26px', padding: '0 16px', fontWeight: 700, fontSize: '15.5px', cursor: pdv && !pdv.blocked ? 'pointer' : 'not-allowed', background: pdv && !pdv.blocked && pdv.ready ? theme.primary : pdv && !pdv.blocked ? theme.text : 'var(--line-strong)', color: pdv && !pdv.blocked ? (pdv.ready ? 'var(--on-brand)' : theme.background) : 'var(--muted)', transition: 'background .2s' };
+    const sheetStyle = mob ? { position: 'absolute', left: 0, right: 0, bottom: 0, maxHeight: '85%', zIndex: 70, display: 'flex', flexDirection: 'column', background: 'var(--bg)', borderRadius: '24px 24px 0 0', animation: 'sheetUp .32s cubic-bezier(.2,.8,.2,1)' }
+      : { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 'min(480px, calc(100% - 48px))', maxHeight: 'calc(100% - 48px)', zIndex: 70, display: 'flex', flexDirection: 'column', background: 'var(--bg)', borderRadius: '22px', boxShadow: '0 30px 80px rgba(0,0,0,.35)' };
+
+    const today = new Date().getDay();
+    const hoursView = d.hours.map((h) => ({ label: h.label, text: h.active ? h.ranges.map((r) => r[0] + '–' + r[1]).join(' · ') : 'Cerrado',
+      rowStyle: { display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '10px 0', borderBottom: '1px solid var(--line)', fontSize: '14.5px', fontWeight: h.day === today ? 700 : 400, color: h.active ? theme.text : 'var(--muted)' } }));
+
+    const set = (k) => (e) => this.setState({ form: { ...S.form, [k]: e.target.value }, errors: { ...S.errors, [k]: null } });
+    const inputStyle = (err) => ({ width: '100%', height: '52px', padding: '0 14px', borderRadius: '14px', border: '1.5px solid ' + (err ? '#B3261E' : 'var(--line-strong)'), background: 'var(--surface)', color: theme.text, fontSize: '16px', outline: 'none' });
+    const modesOn = [d.settings.dineIn && 'dinein', d.settings.pickup && 'pickup'].filter(Boolean);
+    const modeCards = modesOn.map((k) => { const sel = S.mode === k; return {
+      isDine: k === 'dinein', isPickup: k === 'pickup', selected: sel, title: k === 'dinein' ? 'Comer aquí' : 'Recoger',
+      desc: k === 'dinein' ? 'Te llevamos el pedido a tu mesa.' : 'Pasa por él al mostrador cuando esté listo.', onPick: () => this.setState({ mode: k }),
+      style: { display: 'flex', alignItems: 'center', gap: '16px', padding: '22px 20px', minHeight: '112px', width: '100%', borderRadius: CS.r === '0px' ? '0px' : '20px', border: '2px solid ' + (sel ? theme.primary : 'var(--line-strong)'), background: sel ? 'color-mix(in oklab, ' + theme.primary + ' 8%, var(--surface))' : 'var(--surface)', cursor: 'pointer', transition: 'all .15s' },
+      iconStyle: { width: '56px', height: '56px', flex: 'none', borderRadius: '16px', background: sel ? theme.primary : 'var(--img-bg)', color: sel ? 'var(--on-brand)' : theme.text, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s' },
+      radioStyle: { width: '26px', height: '26px', flex: 'none', borderRadius: '50%', border: '2px solid ' + (sel ? theme.primary : 'var(--line-strong)'), background: sel ? theme.primary : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' } }; });
+    const pickupChips = [['asap', 'Lo antes posible'], ['30', 'En 30 min'], ['60', 'En 1 hora'], ['custom', 'Elegir hora']].map(([k, label]) => ({ label, onPick: () => this.setState({ form: { ...S.form, pickupChoice: k } }),
+      style: { height: '44px', padding: '0 16px', borderRadius: '22px', border: '1.5px solid ' + (S.form.pickupChoice === k ? theme.primary : 'var(--line-strong)'), background: S.form.pickupChoice === k ? 'color-mix(in oklab, ' + theme.primary + ' 10%, var(--surface))' : 'var(--surface)', fontWeight: 600, fontSize: '14px', cursor: 'pointer' } }));
+    const stepIdx = { mode: 0, info: 1, confirm: 2 }[S.step];
+    const stepDots = [0, 1, 2].map((i) => ({ style: { width: i === stepIdx ? '22px' : '8px', height: '8px', borderRadius: '4px', background: i <= stepIdx ? theme.primary : 'var(--line-strong)', transition: 'all .25s' } }));
+    const pickupMode = S.mode === 'pickup';
+    const confirmRows = S.step === 'confirm' ? [
+      ['Modalidad', pickupMode ? 'Recoger' : 'Comer aquí'], ['Cliente', S.form.name],
+      ...(pickupMode ? [['Teléfono', S.form.phone]] : [['Mesa', String(S.form.table)]]),
+      ...(!pickupMode && d.settings.askGuests ? [['Personas', String(S.form.guests)]] : []),
+      ...(pickupMode && d.settings.scheduleEnabled ? [['Recoger', this.pickupTimeValue()]] : []),
+      ...(S.form.notes.trim() && d.settings.notesEnabled ? [['Notas', S.form.notes.trim()]] : []),
+    ].map(([k, v]) => ({ k, v })) : [];
+
+    return {
+      ...base, isLoading: S.loading && !isError, isError, isEmpty: !S.loading && !isError && vis.length === 0, isReady: !S.loading && !isError && vis.length > 0,
+      biz: d.business, theme: d.theme, hasLogoImg: !!d.business.logoImage, logoBg: bg(d.business.logoImage, { width: '100%', height: '100%', backgroundColor: '#fff' }), heroBg: bg(d.theme.heroImage, { position: 'absolute', inset: 0 }), noLogoImg: !d.business.logoImage, showHero: d.theme.heroEnabled && !inSearch, publicUrl: 'menu.app/menu/' + d.business.slug,
+      promos: U.cartTotals && d.promotions.filter((p) => p.active).map((p) => ({ ...p, tag: p.type === 'bogo' ? '2×1' : p.type === 'percent' ? '−' + p.value + '%' : '$' })), hasPromos: !inSearch && d.promotions.some((p) => p.active),
+      statusDotStyle: { width: '8px', height: '8px', borderRadius: '50%', background: dotC, flex: 'none', boxShadow: '0 0 0 3px ' + dotC + '33' }, statusText, banner,
+      searchOpen: S.searchOpen, search: S.search, hasSearch: !!S.search, inSearch, noResults: inSearch && !sections.length, searchTitle: sections.length ? (sections[0].items.length + ' resultados para “' + S.search.trim() + '”') : 'Sin resultados para “' + S.search.trim() + '”',
+      toggleSearch: () => this.setState({ searchOpen: !S.searchOpen, search: '' }), onSearch: (e) => this.setState({ search: e.target.value }), clearSearch: () => this.setState({ search: '' }),
+      showChips: !desk && !inSearch, nav, sections, gridStyle: { display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', minmax(0,1fr))', gap: isRows ? (CS.surf === 'transparent' ? '0 28px' : '12px') : mob ? '18px 12px' : '28px 20px' },
+      showDesc: layout !== 'compact' && cs !== 'compact',
+      openInfo: () => this.setState({ infoOpen: true }), closeInfo: () => this.setState({ infoOpen: false }), infoOpen: S.infoOpen, hoursView, sheetStyle,
+      retry: () => { this.setState({ errorDismissed: true, loading: true }); setTimeout(() => this.setState({ loading: false }), 700); },
+
+      totals, lines, hasCart, cartEmpty: !hasCart, cartCountLabel: totals.count ? totals.count + (totals.count === 1 ? ' producto' : ' productos') : 'Sin productos',
+      subtotalLabel: m(totals.subtotal), totalLabel: m(totals.total), hasTax: totals.tax > 0, taxName: 'Impuestos (' + d.settings.taxRate + '%)', taxLabel: m(totals.tax),
+      showCartBar: !desk && hasCart && !S.cartOpen && !S.pd && !S.step && !S.infoOpen && !S.loading, bump: S.bump,
+      showCartLayer: cartVisible && !S.loading && !isError, cartDim: !desk, cartPanelStyle, openCart: () => this.setState({ cartOpen: true }), closeCart: () => this.setState({ cartOpen: false }),
+      cannotOrder: !st.canOrder, continueLabel: st.canOrder ? 'Continuar pedido' : st.key === 'paused' ? 'Pedidos en pausa' : 'Estamos cerrados', primaryBtn,
+      startCheckout: () => { if (!st.canOrder) return; this.setState({ step: 'mode', mode: S.mode && modesOn.includes(S.mode) ? S.mode : modesOn.length === 1 ? modesOn[0] : S.mode, cartOpen: false, errors: {} }); },
+
+      hasPd: !!pdv, pd: pdv || { groups: [], tags: [] }, pdWrapStyle, pdImgStyle, pdCtaStyle, notesEnabled: d.settings.notesEnabled,
+      closePd: () => this.setState({ pd: null }), pdNotes: (e) => this.setState({ pd: { ...S.pd, notes: e.target.value } }),
+      pdInc: () => this.setState({ pd: { ...S.pd, qty: S.pd.qty + 1 } }), pdDec: () => this.setState({ pd: { ...S.pd, qty: Math.max(1, S.pd.qty - 1) } }),
+      addToCart: () => { if (!pdv || pdv.blocked) return; if (!pdv.ready) return this.setState({ pd: { ...S.pd, showErr: true } }); this.commitLine(pdv.p, S.pd.sel, S.pd.qty, S.pd.notes, S.pd.editId); this.setState({ pd: null }); },
+
+      inCheckout: !!S.step, stepMode: S.step === 'mode', stepInfo: S.step === 'info', stepConfirm: S.step === 'confirm', stepSent: S.step === 'sent', stepForm: S.step === 'mode' || S.step === 'info',
+      showBack: S.step !== 'sent', showSteps: S.step !== 'sent', stepDots,
+      stepTitle: { mode: 'Paso 1 de 3 · Modalidad', info: 'Paso 2 de 3 · Tus datos', confirm: 'Paso 3 de 3 · Confirmación', sent: 'Pedido enviado' }[S.step] || '',
+      back: () => this.setState({ step: { mode: null, info: 'mode', confirm: 'info' }[S.step], cartOpen: S.step === 'mode' && !desk }),
+      modeCards, nextLabel: S.step === 'mode' ? (S.mode ? 'Continuar' : 'Elige una opción') : 'Revisar pedido',
+      next: () => { if (S.step === 'mode') { if (S.mode) this.setState({ step: 'info' }); } else if (this.validate()) this.setState({ step: 'confirm', showPreview: false }); },
+      isDine: S.mode === 'dinein', isPickup: pickupMode, askGuests: d.settings.askGuests, scheduleEnabled: d.settings.scheduleEnabled,
+      infoTitle: pickupMode ? 'Datos para recoger' : 'Datos de tu mesa', infoSub: pickupMode ? 'Te avisaremos por WhatsApp cuando esté listo.' : 'Llevaremos tu pedido a la mesa.',
+      form: S.form, errors: S.errors, setName: set('name'), setPhone: set('phone'), setTable: set('table'), setNotes: set('notes'), setPickupTime: set('pickupTime'),
+      inputStyleName: inputStyle(S.errors.name), inputStylePhone: inputStyle(S.errors.phone), inputStyleTable: inputStyle(S.errors.table),
+      guestsInc: () => this.setState({ form: { ...S.form, guests: Math.min(20, S.form.guests + 1) } }), guestsDec: () => this.setState({ form: { ...S.form, guests: Math.max(1, S.form.guests - 1) } }),
+      pickupChips, customTime: S.form.pickupChoice === 'custom',
+      nextNumber: U.pad(d.orderCounter + 1), confirmRows,
+      showPreview: S.showPreview, previewLabel: S.showPreview ? 'Ocultar mensaje' : 'Ver el mensaje que se enviará', togglePreview: () => this.setState({ showPreview: !S.showPreview }),
+      messagePreview: S.step === 'confirm' ? U.generateWhatsAppMessage(this.buildOrder(), d) : '',
+      sendOrder: this.sendOrder, sent: S.sent || {}, waNumber: d.settings.whatsappNumber,
+      finish: () => { this.setState({ step: null, sent: null, mode: null, form: { ...S.form, notes: '' } }); if (this.scroller) this.scroller.scrollTo({ top: 0 }); },
+      toast: S.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>

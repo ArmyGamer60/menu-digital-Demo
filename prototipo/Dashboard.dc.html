@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<title>Molienda — Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Cormorant+Garamond:wght@500;600;700&amp;family=Archivo+Black&amp;family=Young+Serif&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<script src="data/demo.js"></script>
+<style>
+html,body{margin:0;padding:0;height:100%;background:#F6F4F0;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:#1B1916;text-decoration:underline;text-underline-offset:2px}
+a:hover{color:#B4532A}
+@keyframes drawerIn{from{transform:translateX(100%)}to{transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:translate(-50%,-48%) scale(.97)}to{opacity:1;transform:translate(-50%,-50%)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div ref="{{ rootRef }}" style="height:100vh; font-family:'Hanken Grotesk', system-ui, sans-serif; font-size:14px; color:#1B1916; background:#F6F4F0">
+
+  <sc-if value="{{ showLogin }}">
+    <div style="height:100%; display:grid; grid-template-columns:{{ loginCols }}">
+      <div style="display:flex; flex-direction:column; justify-content:space-between; padding:40px 48px">
+        <div style="display:flex; align-items:center; gap:10px; font-weight:700">
+          <span style="width:30px; height:30px; border-radius:8px; background:#1B1916; color:#F6F4F0; display:flex; align-items:center; justify-content:center; font-family:Gloock, serif; font-size:17px">m</span>
+          menu.app
+        </div>
+        <div style="max-width:380px; width:100%; margin:0 auto; animation:rise .35s ease-out">
+          <h1 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:40px; line-height:1.02; letter-spacing:-.015em">Entra a tu panel</h1>
+          <p style="margin:10px 0 28px; color:#6E685F; font-size:15px; line-height:1.5">Administra tu menú, horarios y la apariencia de tu negocio.</p>
+          <div style="display:grid; gap:16px">
+            <div>
+              <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Correo</label>
+              <input value="{{ login.email }}" onChange="{{ setLoginEmail }}" style="width:100%; height:44px; padding:0 14px; border:1px solid #DCD7CE; border-radius:10px; background:#fff; outline:none" style-focus="border-color:#1B1916; box-shadow:0 0 0 3px rgba(27,25,22,.08)">
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px"><label style="font-size:13px; font-weight:600">Contraseña</label><span style="font-size:13px; color:#6E685F">¿La olvidaste?</span></div>
+              <input type="password" value="{{ login.pass }}" onChange="{{ setLoginPass }}" style="width:100%; height:44px; padding:0 14px; border:1px solid #DCD7CE; border-radius:10px; background:#fff; outline:none" style-focus="border-color:#1B1916; box-shadow:0 0 0 3px rgba(27,25,22,.08)">
+            </div>
+            <sc-if value="{{ loginError }}"><div style="color:#B3261E; font-size:13px; font-weight:600">{{ loginError }}</div></sc-if>
+            <button onClick="{{ doLogin }}" style="height:46px; border:none; border-radius:10px; background:#1B1916; color:#fff; font-weight:700; font-size:15px; cursor:pointer" style-hover="background:#35312B">{{ loginLabel }}</button>
+          </div>
+        </div>
+        <div style="font-size:12.5px; color:#6E685F">Prototipo · los datos se guardan en este navegador.</div>
+      </div>
+      <sc-if value="{{ loginWide }}">
+        <div style="position:relative; margin:16px; border-radius:20px; overflow:hidden; background:#2A2622">
+          <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1400&amp;q=75&amp;auto=format&amp;fit=crop" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover">
+          <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,.7))"></div>
+          <div style="position:absolute; left:36px; right:36px; bottom:36px; color:#fff">
+            <div style="font-family:Gloock, serif; font-size:34px; line-height:1.08; max-width:520px">Tu menú, tus pedidos y tu marca en un solo lugar.</div>
+            <div style="margin-top:10px; opacity:.85">Cafeterías, restaurantes, bares, panaderías y food trucks.</div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showApp }}" hint-placeholder-val="{{ true }}">
+    <div style="height:100%; display:flex">
+
+      <aside style="{{ sideStyle }}">
+        <div style="display:flex; align-items:center; gap:10px; padding:18px 14px 14px">
+          <span style="width:36px; height:36px; flex:none; border-radius:10px; background:#B4532A; color:#fff; display:flex; align-items:center; justify-content:center; font-family:Gloock, serif; font-size:19px">{{ biz.logoText }}</span>
+          <sc-if value="{{ sideFull }}" hint-placeholder-val="{{ true }}">
+            <div style="min-width:0">
+              <div style="font-weight:700; font-size:14.5px; color:#F3EEE6">{{ biz.name }}</div>
+              <div style="font-size:12px; color:#A39B8F; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">/menu/{{ biz.slug }}</div>
+            </div>
+          </sc-if>
+        </div>
+        <nav style="flex:1; overflow-y:auto; padding:6px 10px; display:flex; flex-direction:column; gap:2px">
+          <sc-for list="{{ navGroups }}" as="grp">
+            <sc-if value="{{ sideFull }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:#8A8276; padding:14px 10px 6px">{{ grp.label }}</div></sc-if>
+            <sc-for list="{{ grp.items }}" as="n">
+              <button onClick="{{ n.onClick }}" title="{{ n.label }}" style="{{ n.style }}" style-hover="background:rgba(255,255,255,.06)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style="flex:none"><path d="{{ n.icon }}"></path></svg>
+                <sc-if value="{{ sideFull }}" hint-placeholder-val="{{ true }}"><span style="flex:1; text-align:left">{{ n.label }}</span></sc-if>
+                <sc-if value="{{ n.hasCount }}"><span style="min-width:20px; height:20px; padding:0 6px; border-radius:10px; background:#B4532A; color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center">{{ n.count }}</span></sc-if>
+              </button>
+            </sc-for>
+          </sc-for>
+        </nav>
+        <div style="padding:12px 10px 16px; border-top:1px solid rgba(255,255,255,.08)">
+          <a href="Menu%20Cliente.dc.html" target="_blank" style="display:flex; align-items:center; gap:10px; height:40px; padding:0 10px; border-radius:9px; color:#F3EEE6; text-decoration:none; font-weight:600; background:rgba(255,255,255,.06)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style="flex:none"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"></path></svg>
+            <sc-if value="{{ sideFull }}" hint-placeholder-val="{{ true }}"><span>Ver menú público</span></sc-if>
+          </a>
+        </div>
+      </aside>
+
+      <div style="flex:1; min-width:0; display:flex; flex-direction:column">
+        <header style="height:60px; flex:none; display:flex; align-items:center; gap:16px; padding:0 28px; border-bottom:1px solid #E6E2DA; background:#F6F4F0">
+          <div style="flex:1; min-width:0; display:flex; align-items:center; gap:8px; font-size:13.5px; color:#6E685F; white-space:nowrap; overflow:hidden">
+            <sc-for list="{{ crumbs }}" as="c">
+              <sc-if value="{{ c.notFirst }}"><span style="color:#B8B1A6">/</span></sc-if>
+              <button onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.label }}</button>
+            </sc-for>
+          </div>
+          <button onClick="{{ goHours }}" style="display:flex; align-items:center; gap:8px; height:34px; padding:0 12px; border-radius:17px; border:1px solid #DCD7CE; background:#fff; font-weight:600; font-size:13px; cursor:pointer">
+            <span style="{{ stateDot }}"></span>{{ stateLabel }}
+          </button>
+          <div style="width:34px; height:34px; border-radius:50%; background:#E6DFD3; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px">AV</div>
+        </header>
+
+        <div style="flex:1; overflow-y:auto">
+          <div style="max-width:1240px; margin:0 auto; padding:28px 28px 120px">
+
+            <sc-if value="{{ pgOverview }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap">
+                <div>
+                  <div style="font-size:13px; color:#6E685F">{{ todayLabel }}</div>
+                  <h1 style="margin:4px 0 0; font-family:Gloock, serif; font-weight:400; font-size:34px; letter-spacing:-.015em">Buenos días, Andrea</h1>
+                </div>
+                <div style="display:flex; gap:8px">
+                  <button onClick="{{ goOrders }}" style="height:38px; padding:0 14px; border-radius:9px; border:1px solid #DCD7CE; background:#fff; font-weight:600; cursor:pointer">Ver pedidos</button>
+                  <button onClick="{{ newProduct }}" style="height:38px; padding:0 14px; border-radius:9px; border:none; background:#1B1916; color:#fff; font-weight:600; cursor:pointer">Nuevo producto</button>
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-top:22px">
+                <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+                  <div style="padding:18px; border-radius:14px; background:#fff; border:1px solid #E6E2DA; animation:rise .3s ease-out both">
+                    <div style="font-size:13px; color:#6E685F; font-weight:600">{{ k.label }}</div>
+                    <div style="font-family:Gloock, serif; font-size:34px; margin-top:8px; letter-spacing:-.01em">{{ k.value }}</div>
+                    <div style="font-size:12.5px; color:#6E685F; margin-top:4px">{{ k.sub }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:14px; margin-top:14px">
+                <div style="padding:20px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                  <div style="display:flex; justify-content:space-between; align-items:center"><div style="font-weight:700; font-size:15px">Actividad reciente</div><button onClick="{{ goOrders }}" style="border:none; background:none; color:#6E685F; font-weight:600; cursor:pointer">Todos</button></div>
+                  <div style="margin-top:10px">
+                    <sc-for list="{{ recent }}" as="o" hint-placeholder-count="5">
+                      <button onClick="{{ o.open }}" style="width:100%; display:flex; align-items:center; gap:12px; padding:11px 0; border:none; border-bottom:1px solid #F0EDE7; background:none; cursor:pointer; text-align:left">
+                        <span style="font-family:'JetBrains Mono', monospace; font-size:12.5px; color:#6E685F; width:42px">{{ o.time }}</span>
+                        <span style="font-weight:700; width:48px">#{{ o.num }}</span>
+                        <span style="flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ o.customer.name }} <span style="color:#6E685F">· {{ o.modeShort }}</span></span>
+                        <span style="font-weight:600; font-variant-numeric:tabular-nums">{{ o.totalLabel }}</span>
+                        <span style="{{ o.badge.style }}">{{ o.badge.label }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display:grid; gap:14px">
+                  <div style="padding:20px; border-radius:14px; background:#1C1A17; color:#F3EEE6">
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                      <div style="font-size:13px; color:#A39B8F; font-weight:600">Horario actual</div>
+                      <button onClick="{{ goHours }}" style="border:none; background:none; color:#F3EEE6; font-weight:600; text-decoration:underline; text-underline-offset:3px; cursor:pointer">Cambiar</button>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px; margin-top:10px"><span style="{{ stateDot }}"></span><span style="font-family:Gloock, serif; font-size:30px; letter-spacing:.02em">{{ stateBig }}</span></div>
+                    <div style="font-size:13.5px; color:#CFC7BA; margin-top:6px">Hoy: {{ todayHours }}</div>
+                  </div>
+                  <div style="padding:20px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                    <div style="font-weight:700; font-size:15px">Pedidos por modalidad</div>
+                    <div style="display:flex; height:10px; border-radius:5px; overflow:hidden; margin-top:14px; background:#EEE9E1">
+                      <div style="{{ modeBarDine }}"></div><div style="{{ modeBarPick }}"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:12px; font-size:13.5px">
+                      <span style="display:flex; align-items:center; gap:8px"><span style="width:10px; height:10px; border-radius:3px; background:#B4532A"></span>Comer aquí <b>{{ modes.dine }}</b></span>
+                      <span style="display:flex; align-items:center; gap:8px"><span style="width:10px; height:10px; border-radius:3px; background:#2F4A3A"></span>Recoger <b>{{ modes.pick }}</b></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top:14px; padding:20px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                <div style="font-weight:700; font-size:15px">Productos más pedidos</div>
+                <div style="display:grid; gap:12px; margin-top:14px">
+                  <sc-for list="{{ topProducts }}" as="t" hint-placeholder-count="5">
+                    <div style="display:flex; align-items:center; gap:12px">
+                      <span style="width:18px; color:#6E685F; font-weight:700">{{ t.rank }}</span>
+                      <div style="{{ t.bg }}"></div>
+                      <div style="flex:1; min-width:0">
+                        <div style="display:flex; justify-content:space-between; font-weight:600"><span>{{ t.name }}</span><span style="color:#6E685F; font-weight:500">{{ t.sold }} vendidos</span></div>
+                        <div style="height:6px; border-radius:3px; background:#F0EDE7; margin-top:6px; overflow:hidden"><div style="{{ t.bar }}"></div></div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ pgOrders }}">
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap">
+                <div>
+                  <h1 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:34px; letter-spacing:-.015em">Pedidos</h1>
+                  <div style="color:#6E685F; margin-top:4px">Los pedidos llegan por WhatsApp. Este registro se guarda al enviar desde el menú.</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:6px; margin-top:20px; flex-wrap:wrap">
+                <sc-for list="{{ orderTabs }}" as="t"><button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }} <span style="opacity:.6; margin-left:4px">{{ t.count }}</span></button></sc-for>
+              </div>
+              <div style="margin-top:14px; border-radius:14px; background:#fff; border:1px solid #E6E2DA; overflow:hidden">
+                <div style="display:grid; grid-template-columns:70px 70px minmax(0,1.4fr) minmax(0,1fr) 80px 100px 130px; gap:12px; padding:12px 18px; font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:#6E685F; border-bottom:1px solid #E6E2DA; background:#FBFAF7">
+                  <span>Pedido</span><span>Hora</span><span>Cliente</span><span>Modalidad</span><span>Artículos</span><span>Total</span><span>Estado</span>
+                </div>
+                <sc-for list="{{ ordersView }}" as="o">
+                  <div onClick="{{ o.open }}" style="display:grid; grid-template-columns:70px 70px minmax(0,1.4fr) minmax(0,1fr) 80px 100px 130px; gap:12px; align-items:center; padding:14px 18px; border-bottom:1px solid #F0EDE7; cursor:pointer" style-hover="background:#FBFAF7">
+                    <span style="font-weight:700">#{{ o.num }}</span>
+                    <span style="font-family:'JetBrains Mono', monospace; font-size:12.5px; color:#6E685F">{{ o.time }}</span>
+                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis"><b style="font-weight:600">{{ o.customer.name }}</b><sc-if value="{{ o.isNew }}"><span style="margin-left:8px; padding:2px 7px; border-radius:10px; background:#B4532A; color:#fff; font-size:11px; font-weight:700">Nuevo</span></sc-if></span>
+                    <span style="color:#3B3730">{{ o.modeLong }}</span>
+                    <span>{{ o.itemsCount }}</span>
+                    <span style="font-weight:600; font-variant-numeric:tabular-nums">{{ o.totalLabel }}</span>
+                    <span><span style="{{ o.badge.style }}">{{ o.badge.label }}</span></span>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ ordersEmpty }}"><div style="padding:48px; text-align:center; color:#6E685F">No hay pedidos con este estado.</div></sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ pgProducts }}">
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap">
+                <div>
+                  <h1 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:34px; letter-spacing:-.015em">Menú</h1>
+                  <div style="color:#6E685F; margin-top:4px">{{ productsSummary }}</div>
+                </div>
+                <button onClick="{{ newProduct }}" style="height:40px; padding:0 16px; border-radius:9px; border:none; background:#1B1916; color:#fff; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px" style-hover="background:#35312B">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14"></path></svg>Nuevo producto
+                </button>
+              </div>
+              <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; align-items:center">
+                <div style="display:flex; align-items:center; gap:8px; height:38px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; background:#fff; flex:1; min-width:220px; max-width:340px">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E685F" strokeWidth="1.8" strokeLinecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+                  <input value="{{ q }}" onChange="{{ setQ }}" placeholder="Buscar por nombre o SKU" style="flex:1; min-width:0; border:none; outline:none; background:transparent">
+                </div>
+                <select value="{{ fCat }}" onChange="{{ setFCat }}" style="height:38px; padding:0 10px; border:1px solid #DCD7CE; border-radius:9px; background:#fff">
+                  <option value="all">Todas las categorías</option>
+                  <sc-for list="{{ catOptions }}" as="c"><option value="{{ c.id }}">{{ c.name }}</option></sc-for>
+                </select>
+                <div style="display:flex; gap:4px; flex-wrap:wrap">
+                  <sc-for list="{{ statusTabs }}" as="t"><button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }} <span style="opacity:.6; margin-left:3px">{{ t.count }}</span></button></sc-for>
+                </div>
+              </div>
+              <div style="margin-top:14px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                <div style="display:grid; grid-template-columns:minmax(170px,2.2fr) minmax(70px,1fr) 70px 80px 104px 64px 100px; gap:12px; padding:12px 18px; font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:#6E685F; border-bottom:1px solid #E6E2DA; background:#FBFAF7; border-radius:14px 14px 0 0">
+                  <span>Producto</span><span>Categoría</span><span>Precio</span><span>Opciones</span><span>Estado</span><span>Disponible</span><span></span>
+                </div>
+                <sc-for list="{{ productRows }}" as="p" hint-placeholder-count="6">
+                  <div style="position:relative; display:grid; grid-template-columns:minmax(170px,2.2fr) minmax(70px,1fr) 70px 80px 104px 64px 100px; gap:12px; align-items:center; padding:10px 18px; border-bottom:1px solid #F0EDE7" style-hover="background:#FBFAF7">
+                    <button onClick="{{ p.edit }}" style="display:flex; align-items:center; gap:12px; min-width:0; border:none; background:none; padding:0; cursor:pointer; text-align:left">
+                      <div style="{{ p.bg }}"></div>
+                      <span style="min-width:0">
+                        <span style="display:block; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ p.name }}<sc-if value="{{ p.featured }}"><span style="margin-left:6px; color:#B4532A">★</span></sc-if></span>
+                        <span style="display:block; font-family:'JetBrains Mono', monospace; font-size:11.5px; color:#6E685F">{{ p.sku }}</span>
+                      </span>
+                    </button>
+                    <span style="color:#3B3730">{{ p.catName }}</span>
+                    <span style="font-weight:600; font-variant-numeric:tabular-nums">{{ p.priceLabel }}</span>
+                    <span style="color:#6E685F">{{ p.modsLabel }}</span>
+                    <span><span style="{{ p.badge.style }}">{{ p.badge.label }}</span></span>
+                    <button onClick="{{ p.toggleAvail }}" disabled="{{ p.availDisabled }}" title="Disponible / Agotado" style="{{ p.tg.track }}"><span style="{{ p.tg.knob }}"></span></button>
+                    <div style="display:flex; justify-content:flex-end; gap:4px">
+                      <button onClick="{{ p.edit }}" style="height:32px; padding:0 12px; border-radius:8px; border:1px solid #DCD7CE; background:#fff; font-weight:600; font-size:13px; cursor:pointer">Editar</button>
+                      <button onClick="{{ p.toggleMenu }}" aria-label="Más acciones" style="width:32px; height:32px; border-radius:8px; border:1px solid #DCD7CE; background:#fff; cursor:pointer; font-weight:700">⋯</button>
+                    </div>
+                    <sc-if value="{{ p.menuOpen }}">
+                      <div style="position:absolute; right:18px; top:48px; z-index:20; width:180px; padding:6px; border-radius:12px; background:#fff; border:1px solid #E6E2DA; box-shadow:0 12px 32px rgba(0,0,0,.12); animation:rise .15s ease-out">
+                        <button onClick="{{ p.duplicate }}" style="width:100%; height:36px; padding:0 10px; border:none; border-radius:8px; background:none; text-align:left; cursor:pointer" style-hover="background:#F6F4F0">Duplicar</button>
+                        <button onClick="{{ p.archive }}" style="width:100%; height:36px; padding:0 10px; border:none; border-radius:8px; background:none; text-align:left; cursor:pointer" style-hover="background:#F6F4F0">{{ p.archiveLabel }}</button>
+                        <button onClick="{{ p.remove }}" style="width:100%; height:36px; padding:0 10px; border:none; border-radius:8px; background:none; text-align:left; cursor:pointer; color:#B3261E" style-hover="background:#FBEDEB">Eliminar</button>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ productsEmpty }}">
+                  <div style="padding:56px 24px; text-align:center">
+                    <div style="font-family:Gloock, serif; font-size:22px">Sin resultados</div>
+                    <div style="color:#6E685F; margin-top:6px">Ajusta los filtros o crea un producto nuevo.</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ pgEditor }}">
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap">
+                <div>
+                  <h1 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:34px; letter-spacing:-.015em">{{ edTitle }}</h1>
+                  <div style="color:#6E685F; margin-top:4px">{{ edSub }}</div>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap">
+                  <button onClick="{{ edSaveDraft }}" style="height:40px; padding:0 14px; border-radius:9px; border:1px solid #DCD7CE; background:#fff; font-weight:600; cursor:pointer">Guardar como borrador</button>
+                  <button onClick="{{ edSave }}" style="height:40px; padding:0 14px; border-radius:9px; border:1px solid #1B1916; background:#fff; font-weight:600; cursor:pointer">Guardar</button>
+                  <button onClick="{{ edPublish }}" style="height:40px; padding:0 16px; border-radius:9px; border:none; background:#1B1916; color:#fff; font-weight:600; cursor:pointer" style-hover="background:#35312B">Guardar y publicar</button>
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns:{{ edCols }}; gap:18px; margin-top:22px; align-items:start">
+                <div style="display:grid; gap:18px; min-width:0">
+                  <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                    <div style="font-weight:700; font-size:15px; margin-bottom:16px">Información básica</div>
+                    <div style="display:grid; gap:14px">
+                      <div>
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Nombre</label>
+                        <input value="{{ ed.name }}" onChange="{{ edSetName }}" placeholder="Ej. Latte Caramelo" style="{{ edNameStyle }}" style-focus="border-color:#1B1916">
+                        <sc-if value="{{ edErr.name }}"><div style="color:#B3261E; font-size:12.5px; margin-top:5px; font-weight:600">{{ edErr.name }}</div></sc-if>
+                      </div>
+                      <div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:6px"><label style="font-size:13px; font-weight:600">Descripción corta</label><span style="font-size:12px; color:#6E685F">{{ edDescCount }}/140</span></div>
+                        <textarea value="{{ ed.description }}" onChange="{{ edSetDesc }}" rows="3" maxLength="140" placeholder="Qué lleva, cómo se sirve" style="width:100%; padding:10px 12px; border:1px solid #DCD7CE; border-radius:9px; resize:vertical; outline:none" style-focus="border-color:#1B1916"></textarea>
+                      </div>
+                      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px">
+                        <div>
+                          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Precio</label>
+                          <div style="display:flex; align-items:center; height:40px; border:1px solid #DCD7CE; border-radius:9px; background:#fff; padding:0 12px; gap:6px"><span style="color:#6E685F">$</span><input value="{{ ed.price }}" onChange="{{ edSetPrice }}" inputMode="decimal" placeholder="0" style="flex:1; min-width:0; border:none; outline:none"></div>
+                          <sc-if value="{{ edErr.price }}"><div style="color:#B3261E; font-size:12.5px; margin-top:5px; font-weight:600">{{ edErr.price }}</div></sc-if>
+                        </div>
+                        <div>
+                          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Precio anterior <span style="color:#6E685F; font-weight:500">(opcional)</span></label>
+                          <div style="display:flex; align-items:center; height:40px; border:1px solid #DCD7CE; border-radius:9px; background:#fff; padding:0 12px; gap:6px"><span style="color:#6E685F">$</span><input value="{{ ed.compareAt }}" onChange="{{ edSetCompare }}" inputMode="decimal" placeholder="—" style="flex:1; min-width:0; border:none; outline:none"></div>
+                        </div>
+                        <div>
+                          <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">SKU <span style="color:#6E685F; font-weight:500">(opcional)</span></label>
+                          <input value="{{ ed.sku }}" onChange="{{ edSetSku }}" placeholder="CAF-010" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; font-family:'JetBrains Mono', monospace; font-size:13px; outline:none">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+                      <div style="font-weight:700; font-size:15px">Imagen</div>
+                      <button onClick="{{ togglePicker }}" style="height:34px; padding:0 12px; border-radius:8px; border:1px solid #DCD7CE; background:#fff; font-weight:600; cursor:pointer">{{ pickerLabel }}</button>
+                    </div>
+                    <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap">
+                      <div style="width:180px; aspect-ratio:4/5; border-radius:12px; overflow:hidden; background:#EEE9E1; display:flex; align-items:center; justify-content:center; color:#6E685F; font-size:13px; flex:none">
+                        <sc-if value="{{ edHasImage }}"><div style="{{ edBg }}"></div></sc-if>
+                        <sc-if value="{{ edNoImage }}"><span>Sin imagen</span></sc-if>
+                      </div>
+                      <div style="flex:1; min-width:220px">
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">URL de la imagen</label>
+                        <input value="{{ ed.image }}" onChange="{{ edSetImage }}" placeholder="https://" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; font-size:13px; outline:none">
+                        <div style="font-size:12.5px; color:#6E685F; margin-top:8px; line-height:1.45">Recomendado: 1200 × 1500 px, fondo limpio, luz natural. En producción esta carga se hará a un storage de imágenes.</div>
+                      </div>
+                    </div>
+                    <sc-if value="{{ pickerOpen }}">
+                      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(76px, 1fr)); gap:8px; margin-top:16px; animation:rise .2s">
+                        <sc-for list="{{ gallery }}" as="g"><button onClick="{{ g.pick }}" style="{{ g.style }}"><div style="{{ g.bg }}"></div></button></sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+
+                  <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px">
+                      <div style="font-weight:700; font-size:15px">Modificadores</div>
+                      <select value="" onChange="{{ edAddGroup }}" style="height:34px; padding:0 10px; border:1px solid #DCD7CE; border-radius:8px; background:#fff; font-weight:600">
+                        <option value="">+ Agregar grupo</option>
+                        <sc-for list="{{ edAvailGroups }}" as="g"><option value="{{ g.id }}">{{ g.label }}</option></sc-for>
+                      </select>
+                    </div>
+                    <div style="font-size:13px; color:#6E685F; margin-bottom:12px">Variantes, opciones y extras que el cliente elige al pedir.</div>
+                    <sc-if value="{{ edNoGroups }}"><div style="padding:20px; border:1.5px dashed #DCD7CE; border-radius:10px; text-align:center; color:#6E685F">Este producto no tiene modificadores.</div></sc-if>
+                    <div style="display:grid; gap:8px">
+                      <sc-for list="{{ edGroups }}" as="g">
+                        <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid #E6E2DA; border-radius:10px">
+                          <div style="flex:1; min-width:0">
+                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap"><b style="font-weight:700">{{ g.name }}</b><span style="{{ g.kindStyle }}">{{ g.kindLabel }}</span><span style="font-size:12px; color:#6E685F">{{ g.rule }}</span></div>
+                            <div style="font-size:12.5px; color:#6E685F; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ g.optsText }}</div>
+                          </div>
+                          <button onClick="{{ g.up }}" aria-label="Subir" style="width:30px; height:30px; border:1px solid #E6E2DA; border-radius:7px; background:#fff; cursor:pointer">↑</button>
+                          <button onClick="{{ g.remove }}" aria-label="Quitar" style="width:30px; height:30px; border:1px solid #E6E2DA; border-radius:7px; background:#fff; cursor:pointer; color:#B3261E">×</button>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:grid; gap:18px; min-width:0">
+                  <div style="padding:20px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                    <div style="font-weight:700; font-size:15px; margin-bottom:12px">Estado</div>
+                    <div style="display:grid; gap:6px">
+                      <sc-for list="{{ edStatuses }}" as="s">
+                        <button onClick="{{ s.pick }}" style="{{ s.style }}">
+                          <span style="{{ s.radio }}"></span>
+                          <span style="flex:1; text-align:left"><span style="display:block; font-weight:600">{{ s.label }}</span><span style="display:block; font-size:12px; color:#6E685F">{{ s.desc }}</span></span>
+                        </button>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div style="padding:20px; border-radius:14px; background:#fff; border:1px solid #E6E2DA; display:grid; gap:14px">
+                    <div style="font-weight:700; font-size:15px">Organización</div>
+                    <div>
+                      <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Categoría</label>
+                      <select value="{{ ed.categoryId }}" onChange="{{ edSetCat }}" style="width:100%; height:40px; padding:0 10px; border:1px solid #DCD7CE; border-radius:9px; background:#fff">
+                        <sc-for list="{{ catOptions }}" as="c"><option value="{{ c.id }}">{{ c.name }}</option></sc-for>
+                      </select>
+                    </div>
+                    <div>
+                      <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Badge</label>
+                      <div style="display:flex; flex-wrap:wrap; gap:6px">
+                        <sc-for list="{{ edBadges }}" as="b"><button onClick="{{ b.pick }}" style="{{ b.style }}">{{ b.label }}</button></sc-for>
+                      </div>
+                    </div>
+                    <div>
+                      <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Etiquetas</label>
+                      <div style="display:flex; flex-wrap:wrap; gap:6px">
+                        <sc-for list="{{ edTags }}" as="t"><button onClick="{{ t.toggle }}" style="{{ t.style }}">{{ t.label }}</button></sc-for>
+                      </div>
+                      <div style="display:flex; gap:6px; margin-top:8px">
+                        <input value="{{ newTag }}" onChange="{{ setNewTag }}" onKeyDown="{{ newTagKey }}" placeholder="Nueva etiqueta" style="flex:1; min-width:0; height:34px; padding:0 10px; border:1px solid #DCD7CE; border-radius:8px; outline:none">
+                        <button onClick="{{ addTag }}" style="height:34px; padding:0 12px; border-radius:8px; border:1px solid #DCD7CE; background:#fff; font-weight:600; cursor:pointer">Agregar</button>
+                      </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px">
+                      <div><div style="font-weight:600">Destacado</div><div style="font-size:12px; color:#6E685F">Aparece en la franja “Destacados”.</div></div>
+                      <button onClick="{{ edToggleFeat }}" style="{{ edFeatTg.track }}"><span style="{{ edFeatTg.knob }}"></span></button>
+                    </div>
+                  </div>
+                  <div style="padding:20px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                    <div style="font-weight:700; font-size:15px; margin-bottom:12px">Vista previa</div>
+                    <div style="border-radius:4px; overflow:hidden; background:#F5EFE6; padding:12px">
+                      <div style="aspect-ratio:4/5; border-radius:2px; overflow:hidden; background:#E7D5C8"><sc-if value="{{ edHasImage }}"><div style="{{ edBg }}"></div></sc-if></div>
+                      <div style="font-family:Gloock, serif; font-size:21px; margin-top:10px; line-height:1.1">{{ edPreviewName }}</div>
+                      <div style="font-size:13px; color:#6B6258; margin-top:4px">{{ ed.description }}</div>
+                      <div style="font-weight:700; margin-top:8px">{{ edPreviewPrice }}</div>
+                    </div>
+                  </div>
+                  <sc-if value="{{ edIsExisting }}">
+                    <div style="padding:20px; border-radius:14px; background:#fff; border:1px solid #E6E2DA; display:grid; gap:8px">
+                      <div style="font-weight:700; font-size:15px; margin-bottom:4px">Acciones</div>
+                      <button onClick="{{ edDuplicate }}" style="height:38px; border-radius:9px; border:1px solid #DCD7CE; background:#fff; font-weight:600; cursor:pointer">Duplicar producto</button>
+                      <button onClick="{{ edArchive }}" style="height:38px; border-radius:9px; border:1px solid #DCD7CE; background:#fff; font-weight:600; cursor:pointer">Archivar</button>
+                      <button onClick="{{ edDelete }}" style="height:38px; border-radius:9px; border:1px solid #E8C4C0; background:#FBEDEB; color:#B3261E; font-weight:600; cursor:pointer">Eliminar</button>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ pgCategories }}">
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap">
+                <div>
+                  <h1 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:34px; letter-spacing:-.015em">Categorías</h1>
+                  <div style="color:#6E685F; margin-top:4px">Arrastra para cambiar el orden en el menú público.</div>
+                </div>
+                <button onClick="{{ newCategory }}" style="height:40px; padding:0 16px; border-radius:9px; border:none; background:#1B1916; color:#fff; font-weight:600; cursor:pointer">Nueva categoría</button>
+              </div>
+              <div style="margin-top:20px; display:grid; gap:8px; max-width:900px">
+                <sc-for list="{{ catRows }}" as="c">
+                  <div draggable="true" onDragStart="{{ c.onDragStart }}" onDragOver="{{ c.onDragOver }}" onDrop="{{ c.onDrop }}" onDragEnd="{{ c.onDragEnd }}" style="{{ c.style }}">
+                    <span style="cursor:grab; color:#A39B8F; font-size:18px; letter-spacing:-2px; padding:0 4px" title="Arrastrar">⋮⋮</span>
+                    <div style="width:48px; height:48px; flex:none; border-radius:10px; overflow:hidden; background:#EEE9E1; display:flex; align-items:center; justify-content:center; font-family:Gloock, serif; font-size:20px; color:#6E685F">
+                      <sc-if value="{{ c.hasImage }}"><div style="{{ c.bg }}"></div></sc-if>
+                      <sc-if value="{{ c.noImage }}"><span>{{ c.initial }}</span></sc-if>
+                    </div>
+                    <div style="flex:1; min-width:0">
+                      <div style="display:flex; gap:8px; align-items:center"><b style="font-weight:700; font-size:15px">{{ c.name }}</b><sc-if value="{{ c.hidden }}"><span style="padding:2px 8px; border-radius:10px; background:#E6E9EE; color:#3F4A5A; font-size:11.5px; font-weight:700">Oculta</span></sc-if></div>
+                      <div style="font-size:13px; color:#6E685F; margin-top:2px">{{ c.description }}</div>
+                    </div>
+                    <span style="color:#6E685F; font-size:13px; white-space:nowrap">{{ c.countLabel }}</span>
+                    <button onClick="{{ c.toggle }}" title="Visible" style="{{ c.tg.track }}"><span style="{{ c.tg.knob }}"></span></button>
+                    <button onClick="{{ c.edit }}" style="height:32px; padding:0 12px; border-radius:8px; border:1px solid #DCD7CE; background:#fff; font-weight:600; font-size:13px; cursor:pointer">Editar</button>
+                    <button onClick="{{ c.remove }}" aria-label="Eliminar" style="width:32px; height:32px; border-radius:8px; border:1px solid #DCD7CE; background:#fff; cursor:pointer; color:#B3261E">×</button>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ pgModifiers }}">
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap">
+                <div>
+                  <h1 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:34px; letter-spacing:-.015em">Grupos de opciones</h1>
+                  <div style="color:#6E685F; margin-top:4px">Crea un grupo una vez y úsalo en todos los productos que lo necesiten.</div>
+                </div>
+                <button onClick="{{ newGroup }}" style="height:40px; padding:0 16px; border-radius:9px; border:none; background:#1B1916; color:#fff; font-weight:600; cursor:pointer">Nuevo grupo</button>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(290px, 1fr)); gap:14px; margin-top:20px">
+                <sc-for list="{{ groupCards }}" as="g">
+                  <button onClick="{{ g.edit }}" style="padding:18px; border-radius:14px; background:#fff; border:1px solid #E6E2DA; text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:10px; transition:border-color .15s, box-shadow .15s" style-hover="border-color:#1B1916; box-shadow:0 6px 20px rgba(0,0,0,.06)">
+                    <div style="display:flex; justify-content:space-between; gap:8px; align-items:flex-start">
+                      <div><div style="font-weight:700; font-size:16px">{{ g.name }}</div><div style="font-size:12.5px; color:#6E685F; margin-top:2px">{{ g.usedLabel }}</div></div>
+                      <span style="{{ g.kindStyle }}">{{ g.kindLabel }}</span>
+                    </div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap">
+                      <span style="padding:3px 8px; border-radius:6px; background:#F3F0EA; font-size:12px; font-weight:600">{{ g.typeLabel }}</span>
+                      <span style="{{ g.reqStyle }}">{{ g.reqLabel }}</span>
+                    </div>
+                    <div style="border-top:1px solid #F0EDE7; padding-top:8px">
+                      <sc-for list="{{ g.options }}" as="o"><div style="display:flex; justify-content:space-between; padding:4px 0; font-size:13.5px"><span>{{ o.name }}</span><span style="color:#6E685F; font-variant-numeric:tabular-nums">{{ o.priceLabel }}</span></div></sc-for>
+                    </div>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ pgPromotions }}">
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap">
+                <div>
+                  <h1 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:34px; letter-spacing:-.015em">Promociones</h1>
+                  <div style="color:#6E685F; margin-top:4px">Las promociones activas se muestran en el menú y se aplican en el carrito.</div>
+                </div>
+                <button onClick="{{ newPromo }}" style="height:40px; padding:0 16px; border-radius:9px; border:none; background:#1B1916; color:#fff; font-weight:600; cursor:pointer">Nueva promoción</button>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px; margin-top:20px">
+                <sc-for list="{{ promoCards }}" as="p">
+                  <div style="border-radius:14px; background:#fff; border:1px solid #E6E2DA; overflow:hidden">
+                    <div style="{{ p.bannerStyle }}">
+                      <div style="font-size:11.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; opacity:.85">{{ p.typeLabel }}</div>
+                      <div style="font-family:Gloock, serif; font-size:24px; line-height:1.05; margin-top:6px">{{ p.name }}</div>
+                      <div style="font-size:13px; margin-top:6px; opacity:.9">{{ p.banner }}</div>
+                    </div>
+                    <div style="padding:14px 18px; display:grid; gap:6px; font-size:13.5px">
+                      <div style="display:flex; justify-content:space-between"><span style="color:#6E685F">Aplica a</span><span style="font-weight:600">{{ p.target }}</span></div>
+                      <div style="display:flex; justify-content:space-between"><span style="color:#6E685F">Vigencia</span><span style="font-weight:600">{{ p.dates }}</span></div>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 18px; border-top:1px solid #F0EDE7">
+                      <div style="display:flex; align-items:center; gap:10px"><button onClick="{{ p.toggle }}" style="{{ p.tg.track }}"><span style="{{ p.tg.knob }}"></span></button><span style="font-weight:600">{{ p.activeLabel }}</span></div>
+                      <button onClick="{{ p.edit }}" style="height:32px; padding:0 12px; border-radius:8px; border:1px solid #DCD7CE; background:#fff; font-weight:600; font-size:13px; cursor:pointer">Editar</button>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ pgHours }}">
+              <h1 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:34px; letter-spacing:-.015em">Horarios</h1>
+              <div style="color:#6E685F; margin-top:4px">El estado manual tiene prioridad sobre el horario semanal.</div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:10px; margin-top:20px">
+                <sc-for list="{{ manualCards }}" as="m">
+                  <button onClick="{{ m.pick }}" style="{{ m.style }}">
+                    <div style="display:flex; align-items:center; gap:8px"><span style="{{ m.dot }}"></span><b style="font-size:15px">{{ m.label }}</b></div>
+                    <div style="font-size:12.5px; color:#6E685F; margin-top:6px; text-align:left">{{ m.desc }}</div>
+                  </button>
+                </sc-for>
+              </div>
+              <div style="margin-top:18px; border-radius:14px; background:#fff; border:1px solid #E6E2DA; max-width:900px">
+                <sc-for list="{{ hourRows }}" as="h">
+                  <div style="display:flex; gap:16px; align-items:flex-start; padding:16px 20px; border-bottom:1px solid #F0EDE7; flex-wrap:wrap">
+                    <div style="display:flex; align-items:center; gap:12px; width:170px; height:36px">
+                      <button onClick="{{ h.toggle }}" style="{{ h.tg.track }}"><span style="{{ h.tg.knob }}"></span></button>
+                      <b style="font-weight:700">{{ h.label }}</b>
+                    </div>
+                    <div style="flex:1; min-width:260px; display:grid; gap:8px">
+                      <sc-if value="{{ h.closed }}"><div style="height:36px; display:flex; align-items:center; color:#6E685F">Cerrado</div></sc-if>
+                      <sc-for list="{{ h.ranges }}" as="r">
+                        <div style="display:flex; align-items:center; gap:8px">
+                          <input type="time" value="{{ r.from }}" onChange="{{ r.setFrom }}" style="height:36px; padding:0 10px; border:1px solid #DCD7CE; border-radius:8px; background:#fff">
+                          <span style="color:#6E685F">a</span>
+                          <input type="time" value="{{ r.to }}" onChange="{{ r.setTo }}" style="height:36px; padding:0 10px; border:1px solid #DCD7CE; border-radius:8px; background:#fff">
+                          <sc-if value="{{ r.canRemove }}"><button onClick="{{ r.remove }}" aria-label="Quitar horario" style="width:32px; height:32px; border:1px solid #E6E2DA; border-radius:8px; background:#fff; cursor:pointer; color:#B3261E">×</button></sc-if>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <sc-if value="{{ h.active }}">
+                      <div style="display:flex; gap:6px">
+                        <button onClick="{{ h.add }}" style="height:34px; padding:0 12px; border-radius:8px; border:1px solid #DCD7CE; background:#fff; font-weight:600; font-size:13px; cursor:pointer">+ Horario</button>
+                        <sc-if value="{{ h.isFirst }}"><button onClick="{{ copyHours }}" style="height:34px; padding:0 12px; border-radius:8px; border:1px solid #DCD7CE; background:#fff; font-weight:600; font-size:13px; cursor:pointer">Copiar a todos</button></sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ pgAppearance }}">
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap">
+                <div>
+                  <h1 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:34px; letter-spacing:-.015em">Apariencia</h1>
+                  <div style="color:#6E685F; margin-top:4px">Los cambios se guardan y se ven al instante en el menú público.</div>
+                </div>
+              </div>
+              <div style="display:grid; grid-template-columns:{{ apCols }}; gap:20px; margin-top:20px; align-items:start">
+                <div style="display:grid; gap:16px; min-width:0">
+                  <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                    <div style="font-weight:700; font-size:15px; margin-bottom:14px">Branding</div>
+                    <div style="display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px">
+                      <sc-for list="{{ brandSlots }}" as="s">
+                        <label style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; aspect-ratio:2.2; border:1.5px dashed #DCD7CE; border-radius:12px; cursor:pointer; color:#6E685F; font-size:12.5px; text-align:center; padding:8px; overflow:hidden" style-hover="border-color:#1B1916">
+                          <sc-if value="{{ s.has }}"><div style="{{ s.bg }}"></div></sc-if>
+                          <sc-if value="{{ s.empty }}"><span style="font-size:20px">+</span></sc-if>
+                          <span style="font-weight:600; color:#3B3730">{{ s.label }}</span>
+                          <input type="file" accept="image/*" onChange="{{ s.onFile }}" style="display:none">
+                        </label>
+                      </sc-for>
+                    </div>
+                    <div style="display:grid; grid-template-columns:90px minmax(0,1fr); gap:12px; margin-top:14px">
+                      <div><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Monograma</label><input value="{{ biz.logoText }}" onChange="{{ setLogoText }}" maxLength="2" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; text-align:center; font-family:Gloock, serif; font-size:18px; outline:none"></div>
+                      <div><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Nombre</label><input value="{{ biz.name }}" onChange="{{ setBizName }}" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; outline:none"></div>
+                    </div>
+                    <div style="margin-top:12px"><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Subtítulo</label><input value="{{ biz.tagline }}" onChange="{{ setTagline }}" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; outline:none"></div>
+                  </div>
+
+                  <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                    <div style="font-weight:700; font-size:15px; margin-bottom:12px">Colores</div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px">
+                      <sc-for list="{{ palettes }}" as="p">
+                        <button onClick="{{ p.pick }}" title="{{ p.name }}" style="{{ p.style }}">
+                          <span style="display:flex; height:22px; border-radius:6px; overflow:hidden"><span style="{{ p.s1 }}"></span><span style="{{ p.s2 }}"></span><span style="{{ p.s3 }}"></span><span style="{{ p.s4 }}"></span></span>
+                          <span style="font-size:12px; font-weight:600; margin-top:6px; display:block">{{ p.name }}</span>
+                        </button>
+                      </sc-for>
+                    </div>
+                    <div style="display:grid; gap:10px">
+                      <sc-for list="{{ colorFields }}" as="c">
+                        <div style="display:flex; align-items:center; gap:12px">
+                          <input type="color" value="{{ c.value }}" onChange="{{ c.set }}" style="width:40px; height:40px; padding:0; border:1px solid #DCD7CE; border-radius:9px; background:#fff; cursor:pointer">
+                          <span style="flex:1; font-weight:600">{{ c.label }}</span>
+                          <input value="{{ c.value }}" onChange="{{ c.set }}" style="width:100px; height:36px; padding:0 10px; border:1px solid #DCD7CE; border-radius:8px; font-family:'JetBrains Mono', monospace; font-size:12.5px; outline:none">
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                    <div style="font-weight:700; font-size:15px; margin-bottom:12px">Tipografía</div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:8px">
+                      <sc-for list="{{ fontCards }}" as="f">
+                        <button onClick="{{ f.pick }}" style="{{ f.style }}">
+                          <span style="{{ f.sample }}">Aa</span>
+                          <span style="display:block; font-size:12.5px; font-weight:700; margin-top:4px">{{ f.label }}</span>
+                          <span style="display:block; font-size:11px; color:#6E685F">{{ f.names }}</span>
+                        </button>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                    <div style="font-weight:700; font-size:15px; margin-bottom:12px">Estilo de tarjetas</div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:8px">
+                      <sc-for list="{{ cardStyles }}" as="c">
+                        <button onClick="{{ c.pick }}" style="{{ c.style }}">
+                          <span style="{{ c.thumb }}"><span style="{{ c.thumbImg }}"></span><span style="display:block; height:5px; width:70%; margin:6px 6px 0; border-radius:3px; background:#1B1916"></span><span style="display:block; height:4px; width:40%; margin:4px 6px 6px; border-radius:2px; background:#B8B1A6"></span></span>
+                          <span style="display:block; font-size:12.5px; font-weight:700; margin-top:8px">{{ c.label }}</span>
+                        </button>
+                      </sc-for>
+                    </div>
+                    <div style="font-weight:700; font-size:15px; margin:20px 0 12px">Layout</div>
+                    <div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px">
+                      <sc-for list="{{ layouts }}" as="l">
+                        <button onClick="{{ l.pick }}" style="{{ l.style }}">
+                          <span style="{{ l.grid }}"><sc-for list="{{ l.cells }}" as="x"><span style="{{ l.cell }}"></span></sc-for></span>
+                          <span style="display:block; font-size:12.5px; font-weight:700; margin-top:8px">{{ l.label }}</span>
+                        </button>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                      <div><div style="font-weight:700; font-size:15px">Hero</div><div style="font-size:12.5px; color:#6E685F">Banner principal del menú.</div></div>
+                      <button onClick="{{ toggleHero }}" style="{{ heroTg.track }}"><span style="{{ heroTg.knob }}"></span></button>
+                    </div>
+                    <sc-if value="{{ theme.heroEnabled }}">
+                      <div style="display:grid; gap:10px; margin-top:14px">
+                        <input value="{{ theme.heroTitle }}" onChange="{{ setHeroTitle }}" placeholder="Título" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; outline:none">
+                        <input value="{{ theme.heroText }}" onChange="{{ setHeroText }}" placeholder="Mensaje" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; outline:none">
+                        <input value="{{ theme.heroImage }}" onChange="{{ setHeroImage }}" placeholder="URL de imagen" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; font-size:12.5px; outline:none">
+                      </div>
+                    </sc-if>
+                  </div>
+                </div>
+
+                <div style="position:sticky; top:0; min-width:0">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+                    <b>Vista previa en vivo</b>
+                    <div style="display:flex; padding:3px; border-radius:9px; background:#EAE6DF">
+                      <button onClick="{{ pvMobile }}" style="{{ pvMobileStyle }}">Móvil</button>
+                      <button onClick="{{ pvDesktop }}" style="{{ pvDesktopStyle }}">Desktop</button>
+                    </div>
+                  </div>
+                  <div style="{{ pvFrameStyle }}">
+                    <iframe src="Menu%20Cliente.dc.html" title="Vista previa del menú" style="{{ pvIframeStyle }}"></iframe>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ pgSettings }}">
+              <h1 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:34px; letter-spacing:-.015em">Configuración</h1>
+              <div style="display:flex; gap:4px; margin-top:18px; border-bottom:1px solid #E6E2DA">
+                <sc-for list="{{ sTabs }}" as="t"><button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button></sc-for>
+              </div>
+              <div style="max-width:880px; margin-top:20px">
+                <sc-if value="{{ stNegocio }}">
+                  <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA; display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px">
+                    <sc-for list="{{ bizFields }}" as="f">
+                      <div style="{{ f.wrap }}">
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">{{ f.label }}</label>
+                        <input value="{{ f.value }}" onChange="{{ f.set }}" placeholder="{{ f.ph }}" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; outline:none" style-focus="border-color:#1B1916">
+                        <sc-if value="{{ f.hint }}"><div style="font-size:12px; color:#6E685F; margin-top:5px">{{ f.hint }}</div></sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ stPedidos }}">
+                  <div style="border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                    <sc-for list="{{ orderToggles }}" as="t">
+                      <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; padding:16px 20px; border-bottom:1px solid #F0EDE7">
+                        <div><div style="font-weight:700">{{ t.label }}</div><div style="font-size:13px; color:#6E685F; margin-top:2px">{{ t.desc }}</div></div>
+                        <button onClick="{{ t.toggle }}" style="{{ t.tg.track }}"><span style="{{ t.tg.knob }}"></span></button>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ stWhatsapp }}">
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px; align-items:start">
+                    <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA; display:grid; gap:14px">
+                      <div>
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Número de WhatsApp</label>
+                        <input value="{{ set.whatsappNumber }}" onChange="{{ setWa }}" placeholder="52 + 10 dígitos" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; font-family:'JetBrains Mono', monospace; outline:none">
+                        <div style="font-size:12px; color:#6E685F; margin-top:5px">Con código de país, sin espacios. Ej. 526688124410</div>
+                      </div>
+                      <div>
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Mensaje inicial</label>
+                        <textarea value="{{ set.greeting }}" onChange="{{ setGreeting }}" rows="2" style="width:100%; padding:10px 12px; border:1px solid #DCD7CE; border-radius:9px; resize:vertical; outline:none"></textarea>
+                      </div>
+                      <div>
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Mensaje de cierre</label>
+                        <textarea value="{{ set.closing }}" onChange="{{ setClosing }}" rows="2" style="width:100%; padding:10px 12px; border:1px solid #DCD7CE; border-radius:9px; resize:vertical; outline:none"></textarea>
+                      </div>
+                      <div style="font-size:12.5px; color:#6E685F; line-height:1.5">La plantilla incluye automáticamente: negocio, número de pedido, modalidad, cliente, teléfono, mesa u hora, productos, variantes, extras, notas, subtotal, descuento y total.</div>
+                    </div>
+                    <div>
+                      <div style="font-weight:700; margin-bottom:8px">Vista previa · Pedido #{{ waSampleNum }}</div>
+                      <div style="border-radius:14px; overflow:hidden; border:1px solid #E6E2DA">
+                        <div style="padding:10px 14px; background:#0F5A36; color:#fff; font-weight:700; font-size:13.5px">{{ biz.name }} · +{{ set.whatsappNumber }}</div>
+                        <div style="padding:14px; background:#ECE5DD"><div style="margin-left:auto; max-width:94%; padding:10px 12px; border-radius:12px 2px 12px 12px; background:#D9FDD3; color:#111B21; font-size:13px; line-height:1.45; white-space:pre-wrap">{{ waSample }}</div></div>
+                      </div>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ stRegional }}">
+                  <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA; display:grid; gap:18px">
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px">
+                      <div>
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Moneda</label>
+                        <select value="{{ set.currency }}" onChange="{{ setCurrency }}" style="width:100%; height:40px; padding:0 10px; border:1px solid #DCD7CE; border-radius:9px; background:#fff">
+                          <option value="MXN">MXN — Peso mexicano</option><option value="USD">USD — Dólar</option><option value="EUR">EUR — Euro</option><option value="COP">COP — Peso colombiano</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Zona horaria</label>
+                        <select value="{{ set.timezone }}" onChange="{{ setTz }}" style="width:100%; height:40px; padding:0 10px; border:1px solid #DCD7CE; border-radius:9px; background:#fff">
+                          <option value="America/Mazatlan">Mazatlán (GMT−7)</option><option value="America/Mexico_City">Ciudad de México (GMT−6)</option><option value="America/Tijuana">Tijuana (GMT−8)</option><option value="America/Bogota">Bogotá (GMT−5)</option><option value="Europe/Madrid">Madrid (GMT+1)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; padding-top:16px; border-top:1px solid #F0EDE7">
+                      <div><div style="font-weight:700">Agregar impuestos al total</div><div style="font-size:13px; color:#6E685F">Desactívalo si tus precios ya incluyen IVA.</div></div>
+                      <div style="display:flex; align-items:center; gap:10px">
+                        <sc-if value="{{ set.taxEnabled }}"><div style="display:flex; align-items:center; height:36px; border:1px solid #DCD7CE; border-radius:8px; padding:0 10px; gap:4px"><input value="{{ set.taxRate }}" onChange="{{ setTaxRate }}" inputMode="decimal" style="width:36px; border:none; outline:none; text-align:right"><span style="color:#6E685F">%</span></div></sc-if>
+                        <button onClick="{{ toggleTax }}" style="{{ taxTg.track }}"><span style="{{ taxTg.knob }}"></span></button>
+                      </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; padding-top:16px; border-top:1px solid #F0EDE7">
+                      <div><div style="font-weight:700">Restablecer datos demo</div><div style="font-size:13px; color:#6E685F">Vuelve al menú, horarios y apariencia originales.</div></div>
+                      <button onClick="{{ resetDemo }}" style="height:36px; padding:0 14px; border-radius:8px; border:1px solid #E8C4C0; background:#FBEDEB; color:#B3261E; font-weight:600; cursor:pointer">Restablecer</button>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ pgAccount }}">
+              <h1 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:34px; letter-spacing:-.015em">Cuenta</h1>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px; margin-top:20px; max-width:1000px; align-items:start">
+                <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                  <div style="display:flex; gap:14px; align-items:center">
+                    <div style="width:56px; height:56px; border-radius:50%; background:#E6DFD3; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px">AV</div>
+                    <div><div style="font-weight:700; font-size:16px">Andrea Valdez</div><div style="color:#6E685F">andrea@molienda.mx · Propietaria</div></div>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; margin-top:18px; padding-top:14px; border-top:1px solid #F0EDE7"><span style="color:#6E685F">Plan</span><b>Prototipo</b></div>
+                  <button onClick="{{ logout }}" style="margin-top:18px; height:38px; padding:0 14px; border-radius:9px; border:1px solid #DCD7CE; background:#fff; font-weight:600; cursor:pointer">Cerrar sesión</button>
+                </div>
+                <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+                  <div style="font-weight:700; font-size:15px">Negocios</div>
+                  <div style="font-size:13px; color:#6E685F; margin-top:2px">Cada negocio tiene su menú, marca, horarios y WhatsApp.</div>
+                  <div style="display:grid; gap:8px; margin-top:14px">
+                    <sc-for list="{{ businesses }}" as="b">
+                      <div style="display:flex; align-items:center; gap:12px; padding:12px; border:1px solid #E6E2DA; border-radius:10px">
+                        <span style="{{ b.logo }}">{{ b.letter }}</span>
+                        <div style="flex:1; min-width:0"><div style="font-weight:700">{{ b.name }}</div><div style="font-family:'JetBrains Mono', monospace; font-size:12px; color:#6E685F">/menu/{{ b.slug }}</div></div>
+                        <span style="{{ b.badge }}">{{ b.status }}</span>
+                      </div>
+                    </sc-for>
+                    <button onClick="{{ newBusiness }}" style="height:44px; border:1.5px dashed #DCD7CE; border-radius:10px; background:none; font-weight:600; color:#6E685F; cursor:pointer">+ Crear negocio</button>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ menuBackdrop }}"><div onClick="{{ closeMenus }}" style="position:fixed; inset:0; z-index:15"></div></sc-if>
+
+  <sc-if value="{{ hasDrawer }}">
+    <div onClick="{{ closeDrawer }}" style="position:fixed; inset:0; z-index:60; background:rgba(20,18,15,.35); animation:fadeIn .2s"></div>
+    <div style="position:fixed; top:0; right:0; bottom:0; width:min(520px, 100%); z-index:61; background:#fff; display:flex; flex-direction:column; box-shadow:-20px 0 60px rgba(0,0,0,.15); animation:drawerIn .28s cubic-bezier(.2,.8,.2,1)">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid #E6E2DA">
+        <div style="font-family:Gloock, serif; font-size:24px">{{ drawerTitle }}</div>
+        <button onClick="{{ closeDrawer }}" aria-label="Cerrar" style="width:36px; height:36px; border-radius:9px; border:1px solid #E6E2DA; background:#fff; cursor:pointer; font-size:18px">×</button>
+      </div>
+      <div style="flex:1; overflow-y:auto; padding:20px 22px; display:grid; gap:16px; align-content:start">
+
+        <sc-if value="{{ dwCategory }}">
+          <div><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Nombre</label><input value="{{ dr.name }}" onChange="{{ drSet.name }}" placeholder="Ej. Desayunos" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; outline:none"></div>
+          <div><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Descripción</label><input value="{{ dr.description }}" onChange="{{ drSet.description }}" placeholder="Opcional" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; outline:none"></div>
+          <div><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Imagen <span style="color:#6E685F; font-weight:500">(opcional)</span></label><input value="{{ dr.image }}" onChange="{{ drSet.image }}" placeholder="https://" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; font-size:12.5px; outline:none"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center"><div><div style="font-weight:600">Visible en el menú</div><div style="font-size:12px; color:#6E685F">Si la ocultas, sus productos no se muestran.</div></div><button onClick="{{ drToggle.visible }}" style="{{ drTg.visible.track }}"><span style="{{ drTg.visible.knob }}"></span></button></div>
+        </sc-if>
+
+        <sc-if value="{{ dwGroup }}">
+          <div><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Nombre del grupo</label><input value="{{ dr.name }}" onChange="{{ drSet.name }}" placeholder="Ej. Tipo de leche" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; outline:none"></div>
+          <div><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Descripción</label><input value="{{ dr.description }}" onChange="{{ drSet.description }}" placeholder="Opcional, visible para el cliente" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; outline:none"></div>
+          <div>
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Clase</label>
+            <div style="display:flex; gap:6px"><sc-for list="{{ drKinds }}" as="k"><button onClick="{{ k.pick }}" style="{{ k.style }}">{{ k.label }}</button></sc-for></div>
+          </div>
+          <div>
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Tipo de selección</label>
+            <div style="display:flex; gap:6px"><sc-for list="{{ drTypes }}" as="k"><button onClick="{{ k.pick }}" style="{{ k.style }}">{{ k.label }}</button></sc-for></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center"><div><div style="font-weight:600">Obligatorio</div><div style="font-size:12px; color:#6E685F">El cliente debe elegir antes de agregar.</div></div><button onClick="{{ drToggle.required }}" style="{{ drTg.required.track }}"><span style="{{ drTg.required.knob }}"></span></button></div>
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px"><label style="font-size:13px; font-weight:600">Opciones</label><span style="font-size:12px; color:#6E685F">Precio adicional</span></div>
+            <div style="display:grid; gap:6px">
+              <sc-for list="{{ drOptions }}" as="o">
+                <div style="display:flex; gap:6px; align-items:center">
+                  <input value="{{ o.name }}" onChange="{{ o.setName }}" placeholder="Nombre" style="flex:1; min-width:0; height:38px; padding:0 10px; border:1px solid #DCD7CE; border-radius:8px; outline:none">
+                  <div style="display:flex; align-items:center; width:96px; height:38px; border:1px solid #DCD7CE; border-radius:8px; padding:0 8px; gap:3px"><span style="color:#6E685F">+$</span><input value="{{ o.price }}" onChange="{{ o.setPrice }}" inputMode="decimal" style="width:100%; border:none; outline:none"></div>
+                  <button onClick="{{ o.up }}" aria-label="Subir" style="width:32px; height:38px; border:1px solid #E6E2DA; border-radius:8px; background:#fff; cursor:pointer">↑</button>
+                  <button onClick="{{ o.remove }}" aria-label="Quitar" style="width:32px; height:38px; border:1px solid #E6E2DA; border-radius:8px; background:#fff; cursor:pointer; color:#B3261E">×</button>
+                </div>
+              </sc-for>
+            </div>
+            <button onClick="{{ drAddOption }}" style="margin-top:8px; height:36px; width:100%; border:1.5px dashed #DCD7CE; border-radius:8px; background:none; font-weight:600; color:#6E685F; cursor:pointer">+ Agregar opción</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ dwPromo }}">
+          <div><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Nombre</label><input value="{{ dr.name }}" onChange="{{ drSet.name }}" placeholder="Ej. 2x1 en americanos" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; outline:none"></div>
+          <div>
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Tipo</label>
+            <div style="display:flex; gap:6px; flex-wrap:wrap"><sc-for list="{{ drPromoTypes }}" as="k"><button onClick="{{ k.pick }}" style="{{ k.style }}">{{ k.label }}</button></sc-for></div>
+          </div>
+          <sc-if value="{{ drIsPercent }}">
+            <div><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Categoría</label>
+              <select value="{{ dr.categoryId }}" onChange="{{ drSet.categoryId }}" style="width:100%; height:40px; padding:0 10px; border:1px solid #DCD7CE; border-radius:9px; background:#fff"><sc-for list="{{ catOptions }}" as="c"><option value="{{ c.id }}">{{ c.name }}</option></sc-for></select></div>
+          </sc-if>
+          <sc-if value="{{ drIsProduct }}">
+            <div><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Producto relacionado</label>
+              <select value="{{ dr.productId }}" onChange="{{ drSet.productId }}" style="width:100%; height:40px; padding:0 10px; border:1px solid #DCD7CE; border-radius:9px; background:#fff"><sc-for list="{{ productOptions }}" as="c"><option value="{{ c.id }}">{{ c.name }}</option></sc-for></select></div>
+          </sc-if>
+          <sc-if value="{{ drHasValue }}">
+            <div><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">{{ drValueLabel }}</label><input value="{{ dr.value }}" onChange="{{ drSet.value }}" inputMode="decimal" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; outline:none"></div>
+          </sc-if>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+            <div><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Fecha inicial</label><input type="date" value="{{ dr.start }}" onChange="{{ drSet.start }}" style="width:100%; height:40px; padding:0 10px; border:1px solid #DCD7CE; border-radius:9px"></div>
+            <div><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Fecha final</label><input type="date" value="{{ dr.end }}" onChange="{{ drSet.end }}" style="width:100%; height:40px; padding:0 10px; border:1px solid #DCD7CE; border-radius:9px"></div>
+          </div>
+          <div><label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px">Texto del banner</label><input value="{{ dr.banner }}" onChange="{{ drSet.banner }}" placeholder="Se muestra en el menú" style="width:100%; height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; outline:none"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center"><div style="font-weight:600">Activa</div><button onClick="{{ drToggle.active }}" style="{{ drTg.active.track }}"><span style="{{ drTg.active.knob }}"></span></button></div>
+        </sc-if>
+
+        <sc-if value="{{ dwOrder }}">
+          <div style="display:flex; justify-content:space-between; align-items:center"><span style="{{ ov.badge.style }}">{{ ov.badge.label }}</span><span style="color:#6E685F">{{ ov.time }} · {{ ov.modeLong }}</span></div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap"><sc-for list="{{ ov.steps }}" as="s"><button onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.label }}</button></sc-for></div>
+          <div style="padding:14px; border-radius:12px; background:#FBFAF7; border:1px solid #F0EDE7; display:grid; gap:6px">
+            <sc-for list="{{ ov.info }}" as="r"><div style="display:flex; justify-content:space-between; gap:12px"><span style="color:#6E685F">{{ r.k }}</span><b style="font-weight:600; text-align:right">{{ r.v }}</b></div></sc-for>
+          </div>
+          <div>
+            <sc-for list="{{ ov.lines }}" as="l">
+              <div style="display:flex; gap:12px; padding:10px 0; border-bottom:1px solid #F0EDE7">
+                <b style="width:26px">{{ l.qty }}×</b>
+                <div style="flex:1"><div style="font-weight:600">{{ l.name }}</div><sc-if value="{{ l.mods }}"><div style="font-size:12.5px; color:#6E685F">{{ l.mods }}</div></sc-if></div>
+                <span style="font-variant-numeric:tabular-nums">{{ l.totalLabel }}</span>
+              </div>
+            </sc-for>
+            <div style="display:flex; justify-content:space-between; padding-top:12px; font-size:17px; font-weight:700"><span>Total</span><span>{{ ov.totalLabel }}</span></div>
+          </div>
+          <div>
+            <div style="font-weight:700; margin-bottom:6px">Mensaje de WhatsApp</div>
+            <pre style="margin:0; padding:14px; border-radius:12px; background:#E4F3E6; color:#10301A; font-family:'JetBrains Mono', monospace; font-size:12px; line-height:1.5; white-space:pre-wrap">{{ ov.message }}</pre>
+          </div>
+        </sc-if>
+      </div>
+      <sc-if value="{{ drawerHasFooter }}">
+        <div style="display:flex; justify-content:space-between; gap:8px; padding:14px 22px; border-top:1px solid #E6E2DA">
+          <div><sc-if value="{{ drCanDelete }}"><button onClick="{{ drDelete }}" style="height:40px; padding:0 14px; border-radius:9px; border:1px solid #E8C4C0; background:#FBEDEB; color:#B3261E; font-weight:600; cursor:pointer">Eliminar</button></sc-if></div>
+          <div style="display:flex; gap:8px">
+            <button onClick="{{ closeDrawer }}" style="height:40px; padding:0 14px; border-radius:9px; border:1px solid #DCD7CE; background:#fff; font-weight:600; cursor:pointer">Cancelar</button>
+            <button onClick="{{ drSave }}" style="height:40px; padding:0 18px; border-radius:9px; border:none; background:#1B1916; color:#fff; font-weight:600; cursor:pointer">Guardar</button>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasConfirm }}">
+    <div onClick="{{ cancelConfirm }}" style="position:fixed; inset:0; z-index:90; background:rgba(20,18,15,.45); animation:fadeIn .15s"></div>
+    <div role="dialog" style="position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); z-index:91; width:min(420px, calc(100% - 32px)); padding:24px; border-radius:16px; background:#fff; box-shadow:0 30px 80px rgba(0,0,0,.25); animation:pop .2s ease-out">
+      <div style="font-family:Gloock, serif; font-size:24px; line-height:1.1">{{ confirm.title }}</div>
+      <p style="margin:10px 0 22px; color:#6E685F; line-height:1.5">{{ confirm.text }}</p>
+      <div style="display:flex; justify-content:flex-end; gap:8px">
+        <button onClick="{{ cancelConfirm }}" style="height:40px; padding:0 14px; border-radius:9px; border:1px solid #DCD7CE; background:#fff; font-weight:600; cursor:pointer">Cancelar</button>
+        <button onClick="{{ doConfirm }}" style="height:40px; padding:0 16px; border-radius:9px; border:none; background:#B3261E; color:#fff; font-weight:600; cursor:pointer">{{ confirm.label }}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="position:fixed; right:20px; bottom:20px; z-index:100; display:flex; flex-direction:column; gap:8px; align-items:flex-end; pointer-events:none">
+    <sc-for list="{{ toasts }}" as="t">
+      <div style="display:flex; align-items:center; gap:10px; padding:12px 16px; border-radius:12px; background:#1B1916; color:#F6F4F0; font-weight:600; box-shadow:0 12px 30px rgba(0,0,0,.2); animation:toastIn .22s ease-out">
+        <span style="width:8px; height:8px; border-radius:50%; background:#6FCF97"></span>{{ t.msg }}
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startPage&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;&quot;,&quot;login&quot;,&quot;overview&quot;,&quot;orders&quot;,&quot;products&quot;,&quot;categories&quot;,&quot;modifiers&quot;,&quot;promotions&quot;,&quot;hours&quot;,&quot;appearance&quot;,&quot;settings&quot;,&quot;account&quot;],&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Demo&quot;}}">
+const INK = '#1B1916', MUTED = '#6E685F', LINE = '#DCD7CE';
+const STATUS = {
+  published: ['Publicado', '#E3F1E7', '#1F6B3F', 'Visible en el menú.'],
+  draft: ['Borrador', '#EEE9E1', '#5C554B', 'Solo visible en el panel.'],
+  soldout: ['Agotado', '#FBEBD7', '#8A4B0B', 'Visible, sin poder pedirse.'],
+  hidden: ['Oculto', '#E6E9EE', '#3F4A5A', 'No aparece en el menú.'],
+  archived: ['Archivado', '#F1ECEC', '#7A4F4F', 'Fuera de catálogo.'],
+};
+const OSTATUS = { pending: ['Pendiente', '#FBEBD7', '#8A4B0B'], preparing: ['Preparando', '#E4ECF7', '#1F4E79'], ready: ['Listo', '#E3F1E7', '#1F6B3F'], completed: ['Completado', '#EEE9E1', '#5C554B'], cancelled: ['Cancelado', '#F6E1DF', '#8C1D18'] };
+const KIND = { variant: ['Variante', '#F4E6DE', '#8A3B19'], option: ['Opción', '#E4ECF7', '#1F4E79'], extra: ['Extra', '#E3F1E7', '#1F6B3F'] };
+const TAGS = ['Caliente', 'Frío', 'Vegano', 'Vegetariano', 'Sin gluten', 'Sin cafeína', 'Dulce', 'Picante', 'Con leche'];
+const ICONS = {
+  overview: 'M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-3H4zM14 7h6V4h-6z', orders: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6',
+  products: 'M5 3v7a2 2 0 0 0 4 0V3M7 10v11M17 21V3c-2.5 1.5-3.5 4-3.5 8H17', categories: 'M4 6h16M4 12h16M4 18h10',
+  modifiers: 'M4 7h10M18 7h2M4 17h4M12 17h8M16 5v4M10 15v4', promotions: 'M20 12l-8 8-9-9V3h8zM7.5 7.5h.01',
+  hours: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2', appearance: 'M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5 1-1.5 2-1.5h2a4 4 0 0 0 4-4c0-4.4-4-8-9-8zM7.5 11h.01M10 7h.01M15 7.5h.01',
+  settings: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1', account: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0',
+};
+const LABELS = { overview: 'Overview', orders: 'Pedidos', products: 'Menú', categories: 'Categorías', modifiers: 'Modificadores', promotions: 'Promociones', hours: 'Horarios', appearance: 'Apariencia', settings: 'Configuración', account: 'Cuenta' };
+
+class Component extends DCLogic {
+  state = { data: null, authed: false, loggingIn: false, loginError: '', width: 1280, page: 'overview', editor: null, edErr: {}, drawer: null, confirm: null, toasts: [], q: '', fCat: 'all', fStatus: 'all', oStatus: 'all', menuFor: null, stab: 'negocio', dragId: null, overId: null, pv: 'mobile', login: { email: 'andrea@molienda.mx', pass: 'molienda' }, picker: false, newTag: '' };
+
+  componentDidMount() {
+    let authed = false, page = 'overview';
+    try { authed = sessionStorage.getItem('menu-digital.auth') === '1'; page = localStorage.getItem('menu-digital.admin.page') || 'overview'; } catch (e) {}
+    if (this.props.startPage && this.props.startPage !== 'login') { authed = true; page = this.props.startPage; }
+    if (this.props.startPage === 'login') authed = false;
+    if (page === 'editor') page = 'products';
+    this.setState({ authed, page });
+    const boot = () => { if (!window.MenuStore) return setTimeout(boot, 30); this.setState({ data: MenuStore.load() }); this.unsub = MenuStore.subscribe((d) => this.setState({ data: d })); };
+    boot();
+  }
+  componentWillUnmount() { this.unsub && this.unsub(); this.ro && this.ro.disconnect(); }
+  rootRef = (el) => { if (!el || this.root === el) return; this.root = el; this.ro = new ResizeObserver((es) => { const w = es[0].contentRect.width; if (Math.abs(w - this.state.width) > 1) this.setState({ width: w }); }); this.ro.observe(el); };
+
+  clone(x) { return JSON.parse(JSON.stringify(x)); }
+  commit(nd, msg) { MenuStore.save(nd); this.setState({ data: nd }); if (msg) this.toast(msg); }
+  upd(fn, msg) { const nd = this.clone(this.state.data); fn(nd); this.commit(nd, msg); }
+  toast(msg) { const id = Math.random(); this.setState((s) => ({ toasts: [...s.toasts, { id, msg }] })); setTimeout(() => this.setState((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })), 2600); }
+  go(page) { this.setState({ page, editor: null, menuFor: null, drawer: null, picker: false }); try { localStorage.setItem('menu-digital.admin.page', page); } catch (e) {} }
+  ask(title, text, label, action) { this.setState({ confirm: { title, text, label, action } }); }
+  tg(on, disabled) { return { track: { width: '38px', height: '22px', borderRadius: '11px', background: on ? INK : '#D6D1C8', position: 'relative', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', flex: 'none', transition: 'background .15s', padding: 0, opacity: disabled ? 0.4 : 1 }, knob: { position: 'absolute', top: '3px', left: on ? '19px' : '3px', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', transition: 'left .15s', boxShadow: '0 1px 2px rgba(0,0,0,.2)' } }; }
+  pill(bg, fg) { return { display: 'inline-flex', alignItems: 'center', height: '22px', padding: '0 9px', borderRadius: '11px', background: bg, color: fg, fontSize: '12px', fontWeight: 700, whiteSpace: 'nowrap' }; }
+  seg(on) { return { height: '34px', padding: '0 12px', borderRadius: '8px', border: '1px solid ' + (on ? INK : LINE), background: on ? INK : '#fff', color: on ? '#fff' : INK, fontWeight: 600, fontSize: '13px', cursor: 'pointer' }; }
+
+  openEditor(p) {
+    const d = this.state.data;
+    const draft = p ? { ...this.clone(p), price: String(p.price), compareAt: p.compareAt ? String(p.compareAt) : '' }
+      : { id: 'pr_' + Date.now().toString(36), categoryId: (d.categories[0] || {}).id || '', name: '', description: '', price: '', compareAt: '', image: '', tags: [], badge: null, status: 'draft', featured: false, modifierGroupIds: [], sku: '', sold: 0, _new: true };
+    this.setState({ page: 'editor', editor: draft, edErr: {}, menuFor: null, picker: false });
+  }
+  saveEditor(status) {
+    const e = this.state.editor, err = {};
+    if (!e.name.trim()) err.name = 'El nombre es obligatorio.';
+    const price = parseFloat(e.price);
+    if (!(price >= 0) || e.price === '') err.price = 'Indica un precio válido.';
+    if (Object.keys(err).length) return this.setState({ edErr: err });
+    const p = { ...e, name: e.name.trim(), price, compareAt: e.compareAt ? parseFloat(e.compareAt) : null, status: status || e.status };
+    const isNew = p._new; delete p._new;
+    this.upd((d) => { if (isNew) d.products.unshift(p); else d.products = d.products.map((x) => (x.id === p.id ? p : x)); }, status === 'published' ? 'Producto publicado' : status === 'draft' ? 'Guardado como borrador' : 'Cambios guardados');
+    this.setState({ editor: { ...p }, edErr: {} });
+  }
+  duplicate(p) {
+    const c = { ...this.clone(p), id: 'pr_' + Date.now().toString(36), name: p.name + ' (copia)', status: 'draft', sku: p.sku ? p.sku + '-C' : '', sold: 0, featured: false };
+    this.upd((d) => { const i = d.products.findIndex((x) => x.id === p.id); d.products.splice(i + 1, 0, c); }, 'Producto duplicado como borrador');
+    return c;
+  }
+  removeProduct(p, after) {
+    this.ask('¿Eliminar “' + p.name + '”?', 'Esta acción no se puede deshacer. Si solo quieres quitarlo del menú, archívalo.', 'Eliminar', () => { this.upd((d) => { d.products = d.products.filter((x) => x.id !== p.id); }, 'Producto eliminado'); after && after(); });
+  }
+  openDrawer(type, draft, isNew) { this.setState({ drawer: { type, draft: this.clone(draft), isNew } }); }
+  setDr(k, v) { this.setState((s) => ({ drawer: { ...s.drawer, draft: { ...s.drawer.draft, [k]: v } } })); }
+
+  renderVals() {
+    const S = this.state, d = S.data, U = window.MenuUtils;
+    const bg = (url, extra) => ({ backgroundImage: url ? 'url("' + url + '")' : 'none', backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: '#EEE9E1', ...extra });
+    const narrow = S.width < 1000;
+    const base = { rootRef: this.rootRef, showLogin: !S.authed, loginCols: S.width > 900 ? 'minmax(0,1fr) minmax(0,1.1fr)' : '1fr', loginWide: S.width > 900, login: S.login, loginError: S.loginError, loginLabel: S.loggingIn ? 'Entrando…' : 'Entrar',
+      setLoginEmail: (e) => this.setState({ login: { ...S.login, email: e.target.value }, loginError: '' }), setLoginPass: (e) => this.setState({ login: { ...S.login, pass: e.target.value }, loginError: '' }),
+      doLogin: () => { if (!/.+@.+\..+/.test(S.login.email) || !S.login.pass) return this.setState({ loginError: 'Revisa tu correo y contraseña.' }); this.setState({ loggingIn: true }); setTimeout(() => { try { sessionStorage.setItem('menu-digital.auth', '1'); } catch (e) {} this.setState({ authed: true, loggingIn: false }); }, 600); },
+      toasts: S.toasts, hasConfirm: !!S.confirm, confirm: S.confirm || {}, cancelConfirm: () => this.setState({ confirm: null }), doConfirm: () => { const a = S.confirm.action; this.setState({ confirm: null }); a && a(); } };
+    if (!d || !S.authed) return { ...base, showApp: false, biz: {}, navGroups: [], crumbs: [], kpis: [], recent: [], topProducts: [] };
+    const m = (n) => U.money(n, d.settings.currency);
+    const st = U.businessStatus(d);
+    const pg = S.page;
+    const pendingCount = d.orders.filter((o) => o.status === 'pending').length;
+    const navItem = (k) => { const on = pg === k || (k === 'products' && pg === 'editor');
+      return { label: LABELS[k], icon: ICONS[k], onClick: () => this.go(k), hasCount: k === 'orders' && pendingCount > 0, count: pendingCount,
+        style: { display: 'flex', alignItems: 'center', gap: '10px', width: '100%', height: '38px', padding: narrow ? '0' : '0 10px', justifyContent: narrow ? 'center' : 'flex-start', border: 'none', borderRadius: '9px', background: on ? 'rgba(255,255,255,.1)' : 'transparent', color: on ? '#fff' : '#CFC7BA', fontWeight: on ? 700 : 500, fontSize: '14px', cursor: 'pointer', position: 'relative' } }; };
+    const navGroups = [{ label: 'Operación', items: ['overview', 'orders'].map(navItem) }, { label: 'Catálogo', items: ['products', 'categories', 'modifiers', 'promotions'].map(navItem) }, { label: 'Negocio', items: ['hours', 'appearance', 'settings', 'account'].map(navItem) }];
+    const ed = S.editor;
+    const crumbList = [{ label: d.business.name, go: 'overview' }, { label: pg === 'editor' ? 'Menú' : LABELS[pg], go: pg === 'editor' ? 'products' : null }];
+    if (pg === 'editor') crumbList.push({ label: ed && ed.name ? ed.name : 'Nuevo producto' });
+    const crumbs = crumbList.map((c, i) => ({ label: c.label, notFirst: i > 0, onClick: () => c.go && this.go(c.go), style: { border: 'none', background: 'none', padding: 0, font: 'inherit', cursor: c.go ? 'pointer' : 'default', color: i === crumbList.length - 1 ? INK : MUTED, fontWeight: i === crumbList.length - 1 ? 700 : 500 } }));
+    const dotC = st.key === 'open' ? '#2E8B57' : st.key === 'paused' ? '#D08A1E' : '#B3261E';
+    const stateDot = { width: '8px', height: '8px', borderRadius: '50%', background: dotC, boxShadow: '0 0 0 3px ' + dotC + '33', flex: 'none' };
+    const today = new Date();
+    const th = d.hours.find((h) => h.day === today.getDay());
+
+    const catName = (id) => (d.categories.find((c) => c.id === id) || {}).name || 'Sin categoría';
+    const pname = (id) => (d.products.find((p) => p.id === id) || {}).name || 'Producto';
+    const orderView = (o) => ({ ...o, num: U.pad(o.number), totalLabel: m(o.total), badge: { label: OSTATUS[o.status][0], style: this.pill(OSTATUS[o.status][1], OSTATUS[o.status][2]) },
+      modeShort: o.mode === 'dinein' ? 'Mesa ' + o.customer.table : 'Recoger', modeLong: o.mode === 'dinein' ? 'Comer aquí · Mesa ' + o.customer.table : 'Recoger · ' + (o.customer.pickupTime || 'sin hora'),
+      itemsCount: o.items.reduce((s, i) => s + i.qty, 0), open: () => { this.setState({ drawer: { type: 'order', id: o.id } }); if (o.isNew) this.upd((nd) => { const x = nd.orders.find((y) => y.id === o.id); if (x) x.isNew = false; }); } });
+
+    const active = d.orders.filter((o) => o.status !== 'cancelled');
+    const sales = active.reduce((s, o) => s + o.total, 0);
+    const dine = d.orders.filter((o) => o.mode === 'dinein').length, pick = d.orders.length - dine;
+    const top = [...d.products].sort((a, b) => b.sold - a.sold).slice(0, 5); const maxSold = top[0] ? top[0].sold : 1;
+
+    const counts = {}; d.products.forEach((p) => { counts[p.status] = (counts[p.status] || 0) + 1; });
+    const q = S.q.trim().toLowerCase();
+    const rows = d.products.filter((p) => (S.fStatus === 'all' ? p.status !== 'archived' : p.status === S.fStatus) && (S.fCat === 'all' || p.categoryId === S.fCat) && (!q || (p.name + ' ' + p.sku).toLowerCase().includes(q)));
+    const productRows = rows.map((p) => ({ ...p, bg: bg(p.image, { width: '44px', height: '44px', flex: 'none', borderRadius: '9px' }), catName: catName(p.categoryId), priceLabel: m(p.price), modsLabel: p.modifierGroupIds.length ? p.modifierGroupIds.length + (p.modifierGroupIds.length === 1 ? ' grupo' : ' grupos') : '—',
+      badge: { label: STATUS[p.status][0], style: this.pill(STATUS[p.status][1], STATUS[p.status][2]) }, tg: this.tg(p.status === 'published', !['published', 'soldout'].includes(p.status)), availDisabled: !['published', 'soldout'].includes(p.status),
+      toggleAvail: () => this.upd((nd) => { const x = nd.products.find((y) => y.id === p.id); x.status = x.status === 'published' ? 'soldout' : 'published'; }, p.status === 'published' ? p.name + ' marcado como agotado' : p.name + ' disponible'),
+      edit: () => this.openEditor(p), menuOpen: S.menuFor === p.id, toggleMenu: () => this.setState({ menuFor: S.menuFor === p.id ? null : p.id }),
+      duplicate: () => { this.setState({ menuFor: null }); this.duplicate(p); }, archiveLabel: p.status === 'archived' ? 'Restaurar como borrador' : 'Archivar',
+      archive: () => { this.setState({ menuFor: null }); this.upd((nd) => { const x = nd.products.find((y) => y.id === p.id); x.status = x.status === 'archived' ? 'draft' : 'archived'; }, p.status === 'archived' ? 'Producto restaurado' : 'Producto archivado'); },
+      remove: () => { this.setState({ menuFor: null }); this.removeProduct(p); } }));
+    const statusTabs = [['all', 'Todos', d.products.filter((p) => p.status !== 'archived').length], ...Object.keys(STATUS).map((k) => [k, STATUS[k][0], counts[k] || 0])].map(([k, label, count]) => ({ label, count, onClick: () => this.setState({ fStatus: k }), style: this.seg(S.fStatus === k) }));
+    const catOptions = [...d.categories].sort((a, b) => a.order - b.order);
+
+    let edv = {};
+    if (ed) {
+      const set = (k) => (e) => this.setState({ editor: { ...S.editor, [k]: e.target.value }, edErr: { ...S.edErr, [k]: null } });
+      const gallery = [...new Set(window.MenuStore.DEFAULT.products.map((p) => p.image))];
+      const allTags = [...new Set([...TAGS, ...ed.tags])];
+      edv = {
+        ed, edErr: S.edErr, edBg: bg(ed.image, { width: '100%', height: '100%' }), edTitle: ed._new ? 'Nuevo producto' : 'Editar producto', edSub: ed._new ? 'Completa la información y publícalo cuando esté listo.' : 'SKU ' + (ed.sku || '—') + ' · ' + STATUS[ed.status][0],
+        edCols: S.width > 1150 ? 'minmax(0,1.6fr) minmax(300px,1fr)' : '1fr',
+        edSetName: set('name'), edSetDesc: set('description'), edSetPrice: set('price'), edSetCompare: set('compareAt'), edSetSku: set('sku'), edSetImage: set('image'), edSetCat: set('categoryId'),
+        edNameStyle: { width: '100%', height: '40px', padding: '0 12px', border: '1px solid ' + (S.edErr.name ? '#B3261E' : LINE), borderRadius: '9px', outline: 'none', fontSize: '15px' },
+        edDescCount: (ed.description || '').length, edHasImage: !!ed.image, edNoImage: !ed.image,
+        pickerOpen: S.picker, pickerLabel: S.picker ? 'Cerrar galería' : 'Cambiar imagen', togglePicker: () => this.setState({ picker: !S.picker }),
+        gallery: gallery.map((src) => ({ src, bg: bg(src, { width: '100%', height: '100%' }), pick: () => this.setState({ editor: { ...S.editor, image: src } }), style: { aspectRatio: '1', padding: 0, borderRadius: '9px', overflow: 'hidden', border: '2px solid ' + (ed.image === src ? INK : 'transparent'), cursor: 'pointer', background: '#EEE9E1' } })),
+        edGroups: ed.modifierGroupIds.map((gid, i) => { const g = d.modifierGroups.find((x) => x.id === gid); if (!g) return null; return { name: g.name, kindLabel: KIND[g.kind][0], kindStyle: this.pill(KIND[g.kind][1], KIND[g.kind][2]), rule: (g.type === 'single' ? 'Única' : 'Múltiple') + ' · ' + (g.required ? 'Obligatorio' : 'Opcional'), optsText: g.options.map((o) => o.name + (o.price ? ' +' + m(o.price) : '')).join(' · '),
+          up: () => { if (!i) return; const a = [...ed.modifierGroupIds]; [a[i - 1], a[i]] = [a[i], a[i - 1]]; this.setState({ editor: { ...ed, modifierGroupIds: a } }); }, remove: () => this.setState({ editor: { ...ed, modifierGroupIds: ed.modifierGroupIds.filter((x) => x !== gid) } }) }; }).filter(Boolean),
+        edNoGroups: !ed.modifierGroupIds.length,
+        edAvailGroups: d.modifierGroups.filter((g) => !ed.modifierGroupIds.includes(g.id)).map((g) => ({ id: g.id, label: g.name + ' (' + KIND[g.kind][0] + ')' })),
+        edAddGroup: (e) => { const v = e.target.value; if (v) this.setState({ editor: { ...ed, modifierGroupIds: [...ed.modifierGroupIds, v] } }); },
+        edStatuses: Object.keys(STATUS).map((k) => { const on = ed.status === k; return { label: STATUS[k][0], desc: STATUS[k][3], pick: () => this.setState({ editor: { ...ed, status: k } }),
+          style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 10px', borderRadius: '9px', border: '1px solid ' + (on ? INK : '#EFEBE4'), background: on ? '#FBFAF7' : '#fff', cursor: 'pointer' },
+          radio: { width: '16px', height: '16px', flex: 'none', borderRadius: '50%', border: on ? '5px solid ' + INK : '1.5px solid #C9C3B8', background: '#fff' } }; }),
+        edBadges: [[null, 'Ninguno'], ['nuevo', 'Nuevo'], ['popular', 'Popular'], ['especial', 'Especial'], ['recomendado', 'Recomendado']].map(([k, label]) => ({ label, pick: () => this.setState({ editor: { ...ed, badge: k } }), style: this.seg(ed.badge === k) })),
+        edTags: allTags.map((t) => { const on = ed.tags.includes(t); return { label: t, toggle: () => this.setState({ editor: { ...ed, tags: on ? ed.tags.filter((x) => x !== t) : [...ed.tags, t] } }), style: { height: '30px', padding: '0 11px', borderRadius: '15px', border: '1px solid ' + (on ? INK : LINE), background: on ? INK : '#fff', color: on ? '#fff' : INK, fontSize: '12.5px', fontWeight: 600, cursor: 'pointer' } }; }),
+        newTag: S.newTag, setNewTag: (e) => this.setState({ newTag: e.target.value }),
+        addTag: () => { const t = S.newTag.trim(); if (t && !ed.tags.includes(t)) this.setState({ editor: { ...ed, tags: [...ed.tags, t] }, newTag: '' }); },
+        newTagKey: (e) => { if (e.key === 'Enter') { const t = S.newTag.trim(); if (t && !ed.tags.includes(t)) this.setState({ editor: { ...ed, tags: [...ed.tags, t] }, newTag: '' }); } },
+        edFeatTg: this.tg(ed.featured), edToggleFeat: () => this.setState({ editor: { ...ed, featured: !ed.featured } }),
+        edPreviewName: ed.name || 'Nombre del producto', edPreviewPrice: ed.price ? m(parseFloat(ed.price) || 0) : '$0',
+        edIsExisting: !ed._new, edSaveDraft: () => this.saveEditor('draft'), edSave: () => this.saveEditor(null), edPublish: () => this.saveEditor('published'),
+        edDuplicate: () => { const c = this.duplicate(ed); this.openEditor(c); }, edArchive: () => { this.setState({ editor: { ...ed, status: 'archived' } }, () => this.saveEditor('archived')); },
+        edDelete: () => this.removeProduct(ed, () => this.go('products')),
+      };
+    }
+
+    const sortedCats = [...d.categories].sort((a, b) => a.order - b.order);
+    const catRows = sortedCats.map((c) => { const n = d.products.filter((p) => p.categoryId === c.id && p.status !== 'archived').length; return { ...c, bg: bg(c.image, { width: '100%', height: '100%' }), hasImage: !!c.image, noImage: !c.image, initial: c.name[0], hidden: !c.visible, countLabel: n + (n === 1 ? ' producto' : ' productos'), tg: this.tg(c.visible),
+      toggle: () => this.upd((nd) => { const x = nd.categories.find((y) => y.id === c.id); x.visible = !x.visible; }, c.visible ? c.name + ' oculta' : c.name + ' visible'),
+      edit: () => this.openDrawer('category', c, false),
+      remove: () => this.ask('¿Eliminar la categoría “' + c.name + '”?', n ? 'Sus ' + n + ' productos pasarán a borrador sin categoría.' : 'La categoría no tiene productos.', 'Eliminar', () => this.upd((nd) => { nd.categories = nd.categories.filter((x) => x.id !== c.id); nd.products.forEach((p) => { if (p.categoryId === c.id) { p.categoryId = ''; p.status = 'draft'; } }); }, 'Categoría eliminada')),
+      onDragStart: (e) => { e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', c.id); } catch (x) {} this.setState({ dragId: c.id }); },
+      onDragOver: (e) => { e.preventDefault(); if (S.overId !== c.id) this.setState({ overId: c.id }); },
+      onDrop: (e) => { e.preventDefault(); const from = S.dragId; if (!from || from === c.id) return this.setState({ dragId: null, overId: null }); this.upd((nd) => { const arr = [...nd.categories].sort((a, b) => a.order - b.order); const fi = arr.findIndex((x) => x.id === from); const [mv] = arr.splice(fi, 1); const ti = arr.findIndex((x) => x.id === c.id); arr.splice(fi <= ti ? ti + 1 : ti, 0, mv); arr.forEach((x, i) => { x.order = i + 1; }); nd.categories = arr; }, 'Orden actualizado'); this.setState({ dragId: null, overId: null }); },
+      onDragEnd: () => this.setState({ dragId: null, overId: null }),
+      style: { display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 16px', borderRadius: '12px', background: '#fff', border: '1px solid ' + (S.overId === c.id && S.dragId !== c.id ? INK : '#E6E2DA'), opacity: S.dragId === c.id ? 0.45 : c.visible ? 1 : 0.75, boxShadow: S.overId === c.id && S.dragId !== c.id ? '0 -3px 0 ' + INK : 'none', transition: 'box-shadow .12s' } }; });
+
+    const groupCards = d.modifierGroups.map((g) => { const used = d.products.filter((p) => p.modifierGroupIds.includes(g.id)).length; return { ...g, kindLabel: KIND[g.kind][0], kindStyle: this.pill(KIND[g.kind][1], KIND[g.kind][2]), typeLabel: g.type === 'single' ? 'Selección única' : 'Selección múltiple' + (g.max ? ' · máx. ' + g.max : ''),
+      reqLabel: g.required ? 'Obligatorio' : 'Opcional', reqStyle: { padding: '3px 8px', borderRadius: '6px', background: g.required ? INK : '#F3F0EA', color: g.required ? '#fff' : INK, fontSize: '12px', fontWeight: 600 },
+      usedLabel: 'Usado en ' + used + (used === 1 ? ' producto' : ' productos'), options: g.options.map((o) => ({ name: o.name + (o.isDefault ? ' · por defecto' : ''), priceLabel: '+' + m(o.price) })), edit: () => this.openDrawer('group', g, false) }; });
+
+    const PTYPE = { bogo: '2×1', percent: 'Porcentaje de descuento', price: 'Precio promocional' };
+    const fmtDate = (s) => { if (!s) return '—'; const [y, mo, da] = s.split('-'); return da + '/' + mo; };
+    const promoCards = d.promotions.map((p) => ({ ...p, typeLabel: PTYPE[p.type] + (p.type === 'percent' ? ' · ' + p.value + '%' : p.type === 'price' ? ' · ' + m(p.value) : ''), target: p.type === 'percent' ? catName(p.categoryId) : pname(p.productId), dates: fmtDate(p.start) + ' – ' + fmtDate(p.end),
+      bannerStyle: { padding: '18px', background: p.active ? d.theme.primary : '#D9D4CB', color: p.active ? '#fff' : INK, minHeight: '112px' }, tg: this.tg(p.active), activeLabel: p.active ? 'Activa' : 'Inactiva',
+      toggle: () => this.upd((nd) => { const x = nd.promotions.find((y) => y.id === p.id); x.active = !x.active; }, p.active ? 'Promoción desactivada' : 'Promoción activada'), edit: () => this.openDrawer('promo', p, false) }));
+
+    const MAN = [['auto', 'Automático', 'Según el horario semanal.', '#1F4E79'], ['open', 'Abierto', 'Recibiendo pedidos.', '#2E8B57'], ['closed', 'Cerrado', 'El menú muestra “Estamos cerrados”.', '#B3261E'], ['paused', 'Pausar pedidos', 'Menú visible, sin pedidos.', '#D08A1E']];
+    const manualCards = MAN.map(([k, label, desc, c]) => { const on = d.settings.manualState === k; return { label, desc, pick: () => this.upd((nd) => { nd.settings.manualState = k; }, 'Estado: ' + label), dot: { width: '10px', height: '10px', borderRadius: '50%', background: c },
+      style: { padding: '16px', borderRadius: '12px', border: '1.5px solid ' + (on ? INK : '#E6E2DA'), background: on ? '#fff' : '#FBFAF7', cursor: 'pointer', textAlign: 'left', boxShadow: on ? '0 4px 14px rgba(0,0,0,.06)' : 'none' } }; });
+    const hourRows = d.hours.map((h, hi) => ({ label: h.label, active: h.active, closed: !h.active, isFirst: hi === 0, tg: this.tg(h.active),
+      toggle: () => this.upd((nd) => { nd.hours[hi].active = !nd.hours[hi].active; }, h.label + (h.active ? ': cerrado' : ': abierto')),
+      add: () => this.upd((nd) => { const r = nd.hours[hi].ranges; const last = r[r.length - 1]; r.push([last ? last[1] : '17:00', '22:00']); }),
+      ranges: h.active ? h.ranges.map((r, ri) => ({ from: r[0], to: r[1], canRemove: h.ranges.length > 1,
+        setFrom: (e) => this.upd((nd) => { nd.hours[hi].ranges[ri][0] = e.target.value; }), setTo: (e) => this.upd((nd) => { nd.hours[hi].ranges[ri][1] = e.target.value; }),
+        remove: () => this.upd((nd) => { nd.hours[hi].ranges.splice(ri, 1); }) })) : [] }));
+
+    const t = d.theme;
+    const setT = (k) => (e) => this.upd((nd) => { nd.theme[k] = e.target.value; });
+    const pvW = S.width > 1150 ? 400 : Math.min(400, S.width - 360);
+    const FP = U.FONT_PAIRS;
+    const CARD = [['minimal', 'Minimal'], ['rounded', 'Rounded'], ['editorial', 'Editorial'], ['image-heavy', 'Image-heavy'], ['compact', 'Compact'], ['premium', 'Premium']];
+    const LAY = [['grid', 'Grid', 2, 4], ['list', 'Lista', 1, 3], ['large', 'Cards grandes', 1, 2], ['compact', 'Compactas', 1, 5]];
+    const tile = (on) => ({ padding: '10px', borderRadius: '10px', border: '1.5px solid ' + (on ? INK : '#E6E2DA'), background: on ? '#FBFAF7' : '#fff', cursor: 'pointer', textAlign: 'left' });
+
+    const wsample = d.orders[0];
+    const waOrder = wsample ? { ...wsample, items: wsample.items.map((i) => ({ name: pname(i.productId), qty: i.qty, unit: i.unit, mods: i.mods ? String(i.mods).split(' · ') : [], notes: i.notes })) } : null;
+
+    const s = d.settings;
+    const setB = (k) => (e) => this.upd((nd) => { nd.business[k] = e.target.value; });
+    const setS = (k) => (e) => this.upd((nd) => { nd.settings[k] = e.target.value; });
+    const bizFields = [['name', 'Nombre del negocio', ''], ['slug', 'Slug', 'molienda', 'URL pública: menu.app/menu/' + d.business.slug], ['description', 'Descripción', '', null, true], ['address', 'Dirección', '', null, true], ['phone', 'Teléfono', '668 000 0000'], ['whatsapp', 'WhatsApp', '52 + 10 dígitos'], ['instagram', 'Instagram', '@usuario'], ['facebook', 'Facebook', 'facebook.com/…'], ['maps', 'Google Maps', 'https://maps.google.com/…', null, true]]
+      .map(([k, label, ph, hint, wide]) => ({ label, ph, hint, value: d.business[k], set: k === 'slug' ? (e) => this.upd((nd) => { nd.business.slug = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'); }) : setB(k), wrap: { gridColumn: wide ? '1 / -1' : 'auto' } }));
+    const OT = [['dineIn', 'Comer aquí', 'El cliente indica su nombre y número de mesa.'], ['pickup', 'Recoger', 'El cliente indica nombre, teléfono y hora aproximada.'], ['notesEnabled', 'Notas especiales', 'Permite notas por producto y por pedido.'], ['scheduleEnabled', 'Selección de horario', 'Hora aproximada de recogida.'], ['askGuests', 'Número de personas', 'Pregunta cuántas personas en “Comer aquí”.']];
+    const orderToggles = OT.map(([k, label, desc]) => ({ label, desc, tg: this.tg(s[k]), toggle: () => { if ((k === 'dineIn' && s.dineIn && !s.pickup) || (k === 'pickup' && s.pickup && !s.dineIn)) return this.toast('Debe haber al menos una modalidad activa'); this.upd((nd) => { nd.settings[k] = !nd.settings[k]; }, label + (s[k] ? ' desactivado' : ' activado')); } }));
+
+    let dv = { hasDrawer: false };
+    const dw = S.drawer;
+    if (dw) {
+      const dr = dw.draft || {};
+      const drSet = {}; ['name', 'description', 'image', 'categoryId', 'productId', 'value', 'start', 'end', 'banner'].forEach((k) => { drSet[k] = (e) => this.setDr(k, e.target.value); });
+      const drToggle = {}; const drTg = {}; ['visible', 'required', 'active'].forEach((k) => { drToggle[k] = () => this.setDr(k, !dr[k]); drTg[k] = this.tg(!!dr[k]); });
+      const titles = { category: dw.isNew ? 'Nueva categoría' : 'Editar categoría', group: dw.isNew ? 'Nuevo grupo' : 'Editar grupo', promo: dw.isNew ? 'Nueva promoción' : 'Editar promoción', order: '' };
+      dv = { hasDrawer: true, dr, drSet, drToggle, drTg, dwCategory: dw.type === 'category', dwGroup: dw.type === 'group', dwPromo: dw.type === 'promo', dwOrder: dw.type === 'order', drawerHasFooter: dw.type !== 'order', drCanDelete: !dw.isNew && dw.type !== 'category',
+        drawerTitle: titles[dw.type], closeDrawer: () => this.setState({ drawer: null }),
+        drKinds: Object.keys(KIND).map((k) => ({ label: KIND[k][0], pick: () => this.setDr('kind', k), style: this.seg(dr.kind === k) })),
+        drTypes: [['single', 'Selección única'], ['multiple', 'Selección múltiple']].map(([k, label]) => ({ label, pick: () => this.setDr('type', k), style: this.seg(dr.type === k) })),
+        drOptions: (dr.options || []).map((o, i) => ({ name: o.name, price: String(o.price),
+          setName: (e) => { const a = this.clone(dr.options); a[i].name = e.target.value; this.setDr('options', a); }, setPrice: (e) => { const a = this.clone(dr.options); a[i].price = e.target.value; this.setDr('options', a); },
+          up: () => { if (!i) return; const a = this.clone(dr.options); [a[i - 1], a[i]] = [a[i], a[i - 1]]; this.setDr('options', a); }, remove: () => this.setDr('options', dr.options.filter((_, j) => j !== i)) })),
+        drAddOption: () => this.setDr('options', [...(dr.options || []), { id: 'o_' + Date.now().toString(36), name: '', price: 0 }]),
+        drPromoTypes: Object.keys(PTYPE).map((k) => ({ label: PTYPE[k], pick: () => this.setDr('type', k), style: this.seg(dr.type === k) })),
+        drIsPercent: dr.type === 'percent', drIsProduct: dr.type !== 'percent', drHasValue: dr.type !== 'bogo', drValueLabel: dr.type === 'percent' ? 'Porcentaje de descuento' : 'Precio promocional',
+        productOptions: d.products.filter((p) => p.status !== 'archived').map((p) => ({ id: p.id, name: p.name })),
+        drSave: () => {
+          if (!String(dr.name || '').trim()) return this.toast('Escribe un nombre');
+          const key = { category: 'categories', group: 'modifierGroups', promo: 'promotions' }[dw.type];
+          const item = this.clone(dr);
+          if (dw.type === 'group') item.options = item.options.filter((o) => o.name.trim()).map((o) => ({ ...o, price: parseFloat(o.price) || 0 }));
+          if (dw.type === 'promo') item.value = parseFloat(item.value) || 0;
+          this.upd((nd) => { if (dw.isNew) { if (dw.type === 'category') item.order = nd.categories.length + 1; nd[key].push(item); } else nd[key] = nd[key].map((x) => (x.id === item.id ? item : x)); }, 'Guardado');
+          this.setState({ drawer: null });
+        },
+        drDelete: () => { const key = { group: 'modifierGroups', promo: 'promotions' }[dw.type]; this.ask('¿Eliminar “' + dr.name + '”?', dw.type === 'group' ? 'Se quitará de todos los productos que lo usan.' : 'La promoción dejará de aplicarse.', 'Eliminar', () => { this.upd((nd) => { nd[key] = nd[key].filter((x) => x.id !== dr.id); if (dw.type === 'group') nd.products.forEach((p) => { p.modifierGroupIds = p.modifierGroupIds.filter((g) => g !== dr.id); }); }, 'Eliminado'); this.setState({ drawer: null }); }); },
+      };
+      if (dw.type === 'order') {
+        const o = d.orders.find((x) => x.id === dw.id);
+        if (o) { const ov = orderView(o);
+          const msgOrder = { ...o, items: o.items.map((i) => ({ name: pname(i.productId), qty: i.qty, unit: i.unit, mods: i.mods ? String(i.mods).split(' · ') : [], notes: i.notes })) };
+          dv.drawerTitle = 'Pedido #' + ov.num;
+          dv.ov = { ...ov, message: U.generateWhatsAppMessage(msgOrder, d), totalLabel: m(o.total),
+            info: [['Cliente', o.customer.name], ...(o.customer.phone ? [['Teléfono', o.customer.phone]] : []), ...(o.mode === 'dinein' ? [['Mesa', o.customer.table]] : [['Hora de recogida', o.customer.pickupTime || '—']]), ...(o.customer.guests ? [['Personas', String(o.customer.guests)]] : []), ...(o.notes ? [['Notas', o.notes]] : [])].map(([k, v]) => ({ k, v })),
+            lines: o.items.map((i) => ({ qty: i.qty, name: pname(i.productId), mods: i.mods || '', totalLabel: m(i.total) })),
+            steps: Object.keys(OSTATUS).map((k) => ({ label: OSTATUS[k][0], pick: () => this.upd((nd) => { nd.orders.find((x) => x.id === o.id).status = k; }, 'Pedido #' + ov.num + ': ' + OSTATUS[k][0]), style: this.seg(o.status === k) })) };
+        } else dv.ov = { badge: {}, steps: [], info: [], lines: [] };
+      }
+    }
+
+    const orderList = d.orders.filter((o) => S.oStatus === 'all' || o.status === S.oStatus);
+    return {
+      ...base, showApp: true, biz: d.business, theme: t, set: s,
+      sideFull: !narrow, sideStyle: { width: narrow ? '68px' : '236px', flex: 'none', height: '100%', display: 'flex', flexDirection: 'column', background: '#1C1A17', color: '#F3EEE6' },
+      navGroups, crumbs, stateDot, stateLabel: st.label, stateBig: st.key === 'open' ? 'ABIERTO' : st.key === 'paused' ? 'EN PAUSA' : 'CERRADO',
+      todayHours: th && th.active ? th.ranges.map((r) => r[0] + '–' + r[1]).join(' · ') : 'Cerrado', goHours: () => this.go('hours'), goOrders: () => this.go('orders'), newProduct: () => this.openEditor(null),
+      pgOverview: pg === 'overview', pgOrders: pg === 'orders', pgProducts: pg === 'products', pgEditor: pg === 'editor' && !!ed, pgCategories: pg === 'categories', pgModifiers: pg === 'modifiers', pgPromotions: pg === 'promotions', pgHours: pg === 'hours', pgAppearance: pg === 'appearance', pgSettings: pg === 'settings', pgAccount: pg === 'account',
+      todayLabel: today.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }),
+      kpis: [{ label: 'Pedidos de hoy', value: String(d.orders.length), sub: 'Desde las 07:30' }, { label: 'Pendientes', value: String(d.orders.filter((o) => ['pending', 'preparing'].includes(o.status)).length), sub: 'Pendientes o en preparación' }, { label: 'Ventas estimadas', value: m(sales), sub: 'Según pedidos enviados' }, { label: 'Ticket promedio', value: m(active.length ? Math.round(sales / active.length) : 0), sub: active.length + ' pedidos' }],
+      recent: d.orders.slice(0, 6).map(orderView), modes: { dine, pick },
+      modeBarDine: { width: (d.orders.length ? (dine / d.orders.length) * 100 : 50) + '%', background: '#B4532A' }, modeBarPick: { flex: 1, background: '#2F4A3A' },
+      topProducts: top.map((p, i) => ({ bg: bg(p.image, { width: '40px', height: '40px', borderRadius: '9px', flex: 'none' }), rank: i + 1, name: p.name, image: p.image, sold: p.sold, bar: { width: (p.sold / maxSold) * 100 + '%', height: '100%', background: INK, borderRadius: '3px' } })),
+      orderTabs: [['all', 'Todos', d.orders.length], ...Object.keys(OSTATUS).map((k) => [k, OSTATUS[k][0], d.orders.filter((o) => o.status === k).length])].map(([k, label, count]) => ({ label, count, onClick: () => this.setState({ oStatus: k }), style: this.seg(S.oStatus === k) })),
+      ordersView: orderList.map(orderView), ordersEmpty: !orderList.length,
+      productsSummary: d.products.filter((p) => p.status === 'published').length + ' publicados · ' + d.products.length + ' en total', q: S.q, setQ: (e) => this.setState({ q: e.target.value }), fCat: S.fCat, setFCat: (e) => this.setState({ fCat: e.target.value }),
+      catOptions, statusTabs, productRows, productsEmpty: !productRows.length, menuBackdrop: !!S.menuFor, closeMenus: () => this.setState({ menuFor: null }),
+      ...edv, ed: ed || {}, edErr: S.edErr,
+      catRows, newCategory: () => this.openDrawer('category', { id: 'cat_' + Date.now().toString(36), name: '', description: '', image: '', visible: true }, true),
+      groupCards, newGroup: () => this.openDrawer('group', { id: 'mg_' + Date.now().toString(36), name: '', description: '', kind: 'option', type: 'single', required: false, options: [{ id: 'o_' + Date.now().toString(36), name: '', price: 0 }] }, true),
+      promoCards, newPromo: () => this.openDrawer('promo', { id: 'promo_' + Date.now().toString(36), name: '', type: 'bogo', productId: d.products[0].id, categoryId: d.categories[0].id, value: 0, start: '2026-09-23', end: '2026-10-23', active: true, banner: '' }, true),
+      manualCards, hourRows, copyHours: () => this.upd((nd) => { const src = nd.hours[0]; nd.hours.forEach((h, i) => { if (i > 0) { h.active = src.active; h.ranges = this.clone(src.ranges); } }); }, 'Horario copiado a toda la semana'),
+      apCols: S.width > 1150 ? 'minmax(0,1fr) ' + pvW + 'px' : '1fr',
+      brandSlots: [['logoImage', 'Logo'], ['logoAlt', 'Logo alternativo'], ['favicon', 'Favicon']].map(([k, label]) => ({ label, has: !!d.business[k], empty: !d.business[k], src: d.business[k] || '', bg: bg(d.business[k], { width: '70%', height: '55%', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundColor: 'transparent' }),
+        onFile: (e) => { const f = e.target.files && e.target.files[0]; if (!f) return; if (f.size > 400000) return this.toast('Usa una imagen menor a 400 KB'); const r = new FileReader(); r.onload = () => this.upd((nd) => { nd.business[k] = r.result; }, label + ' actualizado'); r.readAsDataURL(f); } })),
+      setLogoText: setB('logoText'), setBizName: setB('name'), setTagline: setB('tagline'),
+      palettes: U.PALETTES.map((p) => ({ name: p.name, pick: () => this.upd((nd) => { Object.assign(nd.theme, { primary: p.primary, secondary: p.secondary, accent: p.accent, background: p.background, text: p.text }); }, 'Paleta ' + p.name),
+        style: { ...tile(t.primary === p.primary && t.background === p.background), width: '96px' }, s1: { flex: 1, background: p.background }, s2: { flex: 1, background: p.primary }, s3: { flex: 1, background: p.secondary }, s4: { flex: 1, background: p.accent } })),
+      colorFields: [['primary', 'Color principal'], ['secondary', 'Color secundario'], ['accent', 'Color de acento'], ['background', 'Color de fondo'], ['text', 'Color de texto']].map(([k, label]) => ({ label, value: t[k], set: setT(k) })),
+      fontCards: Object.keys(FP).map((k) => ({ label: FP[k].label, names: FP[k].display.split(',')[0].replace(/'/g, '') + ' + ' + FP[k].body.split(',')[0].replace(/'/g, ''), pick: () => this.upd((nd) => { nd.theme.fontPair = k; }, 'Tipografía ' + FP[k].label), style: tile(t.fontPair === k), sample: { fontFamily: FP[k].display, fontSize: '30px', lineHeight: 1 } })),
+      cardStyles: CARD.map(([k, label]) => ({ label, pick: () => this.upd((nd) => { nd.theme.cardStyle = k; }, 'Tarjetas: ' + label), style: tile(t.cardStyle === k),
+        thumb: { display: 'block', background: k === 'rounded' || k === 'compact' || k === 'premium' ? '#fff' : 'transparent', border: k === 'premium' || k === 'compact' ? '1px solid #D6D1C8' : 'none', borderRadius: { minimal: '6px', rounded: '12px', editorial: '1px', 'image-heavy': '8px', compact: '6px', premium: '0' }[k], boxShadow: k === 'rounded' ? '0 3px 10px rgba(0,0,0,.08)' : 'none', overflow: 'hidden' },
+        thumbImg: { display: 'block', height: k === 'image-heavy' ? '64px' : k === 'compact' ? '30px' : '44px', background: 'linear-gradient(135deg,#C9A58A,#8E5B3E)', borderRadius: k === 'minimal' ? '5px' : '0' } })),
+      layouts: LAY.map(([k, label, cols, n]) => ({ label, pick: () => this.upd((nd) => { nd.theme.layout = k; }, 'Layout: ' + label), style: tile(t.layout === k), cells: Array.from({ length: n }, (_, i) => i),
+        grid: { display: 'grid', gridTemplateColumns: 'repeat(' + cols + ',1fr)', gap: '3px', height: '44px', alignContent: 'start' }, cell: { display: 'block', height: k === 'large' ? '20px' : k === 'compact' ? '6px' : k === 'list' ? '12px' : '20px', background: '#C9BFB2', borderRadius: '2px' } })),
+      heroTg: this.tg(t.heroEnabled), toggleHero: () => this.upd((nd) => { nd.theme.heroEnabled = !nd.theme.heroEnabled; }), setHeroTitle: setT('heroTitle'), setHeroText: setT('heroText'), setHeroImage: setT('heroImage'),
+      pvMobile: () => this.setState({ pv: 'mobile' }), pvDesktop: () => this.setState({ pv: 'desktop' }),
+      pvMobileStyle: { height: '28px', padding: '0 12px', border: 'none', borderRadius: '7px', background: S.pv === 'mobile' ? '#fff' : 'transparent', fontWeight: 600, fontSize: '12.5px', cursor: 'pointer' },
+      pvDesktopStyle: { height: '28px', padding: '0 12px', border: 'none', borderRadius: '7px', background: S.pv === 'desktop' ? '#fff' : 'transparent', fontWeight: 600, fontSize: '12.5px', cursor: 'pointer' },
+      pvFrameStyle: S.pv === 'mobile' ? { width: '100%', maxWidth: '390px', height: '760px', margin: '0 auto', borderRadius: '36px', border: '10px solid #1C1A17', overflow: 'hidden', background: '#fff', boxShadow: '0 20px 50px rgba(0,0,0,.15)' }
+        : { width: '100%', height: (Math.max(pvW, 320) * 0.75) + 'px', borderRadius: '12px', border: '1px solid #E6E2DA', overflow: 'hidden', background: '#fff', position: 'relative' },
+      pvIframeStyle: S.pv === 'mobile' ? { width: '100%', height: '100%', border: 'none', display: 'block' } : { width: '1280px', height: '960px', border: 'none', transform: 'scale(' + (Math.max(pvW, 320) / 1280) + ')', transformOrigin: '0 0', position: 'absolute', left: 0, top: 0 },
+      sTabs: [['negocio', 'Negocio'], ['pedidos', 'Pedidos'], ['whatsapp', 'WhatsApp'], ['regional', 'Moneda e impuestos']].map(([k, label]) => ({ label, onClick: () => this.setState({ stab: k }), style: { height: '40px', padding: '0 14px', border: 'none', borderBottom: '2px solid ' + (S.stab === k ? INK : 'transparent'), background: 'none', fontWeight: S.stab === k ? 700 : 500, color: S.stab === k ? INK : MUTED, cursor: 'pointer', marginBottom: '-1px' } })),
+      stNegocio: S.stab === 'negocio', stPedidos: S.stab === 'pedidos', stWhatsapp: S.stab === 'whatsapp', stRegional: S.stab === 'regional',
+      bizFields, orderToggles, setWa: (e) => this.upd((nd) => { nd.settings.whatsappNumber = e.target.value.replace(/\D/g, ''); }), setGreeting: setS('greeting'), setClosing: setS('closing'),
+      waSample: waOrder ? U.generateWhatsAppMessage(waOrder, d) : '', waSampleNum: wsample ? U.pad(wsample.number) : '',
+      setCurrency: setS('currency'), setTz: setS('timezone'), setTaxRate: (e) => this.upd((nd) => { nd.settings.taxRate = parseFloat(e.target.value) || 0; }), taxTg: this.tg(s.taxEnabled), toggleTax: () => this.upd((nd) => { nd.settings.taxEnabled = !nd.settings.taxEnabled; }, s.taxEnabled ? 'Impuestos desactivados' : 'Impuestos activados'),
+      resetDemo: () => this.ask('¿Restablecer datos demo?', 'Se perderán los cambios hechos en menú, horarios, apariencia y pedidos.', 'Restablecer', () => { const nd = MenuStore.reset(); this.setState({ data: nd }); this.toast('Datos demo restablecidos'); }),
+      logout: () => { try { sessionStorage.removeItem('menu-digital.auth'); } catch (e) {} this.setState({ authed: false }); },
+      businesses: [{ name: d.business.name, slug: d.business.slug, letter: d.business.logoText, color: '#B4532A', status: 'Activo' }, { name: 'Tacos El Güero', slug: 'tacos-el-guero', letter: 'T', color: '#2F4A3A', status: 'Borrador' }].map((b) => ({ ...b, logo: { width: '36px', height: '36px', borderRadius: '9px', background: b.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Gloock, serif', fontSize: '17px', flex: 'none' }, badge: this.pill(b.status === 'Activo' ? '#E3F1E7' : '#EEE9E1', b.status === 'Activo' ? '#1F6B3F' : '#5C554B') })),
+      newBusiness: () => this.toast('Crear negocio requiere el backend multi-negocio'),
+      ...dv,
+    };
+  }
+}
+</script>
+</body>
+</html>

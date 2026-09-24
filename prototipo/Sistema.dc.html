@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<title>Menú digital — Sistema y arquitectura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+html,body{margin:0;padding:0;background:#F6F4F0;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#1B1916;text-decoration:underline;text-underline-offset:3px}
+a:hover{color:#B4532A}
+</style>
+</helmet>
+
+<div style="font-family:'Hanken Grotesk', system-ui, sans-serif; color:#1B1916; font-size:15px; line-height:1.5">
+  <div style="max-width:1120px; margin:0 auto; padding:48px 28px 96px">
+
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap; padding-bottom:28px; border-bottom:1px solid #E6E2DA">
+      <div>
+        <div style="font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#6E685F">menu.app · v0.1 prototipo</div>
+        <h1 style="margin:8px 0 0; font-family:Gloock, serif; font-weight:400; font-size:52px; line-height:1; letter-spacing:-.02em">Sistema y arquitectura</h1>
+        <p style="margin:12px 0 0; max-width:620px; color:#6E685F; text-wrap:pretty">Menú digital + pedidos por WhatsApp para negocios de alimentos. Este documento resume tokens, componentes, modelo de datos y estructura de carpetas para la implementación con Claude Code.</p>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap">
+        <a href="Menu%20Cliente.dc.html" style="height:42px; padding:0 16px; border-radius:10px; background:#1B1916; color:#fff; font-weight:600; display:flex; align-items:center; text-decoration:none">Menú del cliente</a>
+        <a href="Dashboard.dc.html" style="height:42px; padding:0 16px; border-radius:10px; border:1px solid #DCD7CE; background:#fff; font-weight:600; display:flex; align-items:center; text-decoration:none">Panel del negocio</a>
+      </div>
+    </div>
+
+    <section style="padding-top:44px">
+      <h2 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:30px">1. Dos capas de estilo</h2>
+      <p style="margin:8px 0 0; color:#6E685F; max-width:720px">El menú público se tematiza por negocio (Theme). El panel usa una paleta fija y neutra para que la marca del negocio no afecte la productividad.</p>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px; margin-top:20px">
+        <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+          <div style="font-weight:700">Menú público · variables de Theme</div>
+          <div style="display:grid; gap:8px; margin-top:14px; font-size:13.5px">
+            <div style="display:flex; align-items:center; gap:12px"><span style="width:36px; height:36px; border-radius:9px; background:#B4532A"></span><code style="font-family:'JetBrains Mono', monospace">--brand</code><span style="color:#6E685F; margin-left:auto">primary · CTA, badges</span></div>
+            <div style="display:flex; align-items:center; gap:12px"><span style="width:36px; height:36px; border-radius:9px; background:#2F4A3A"></span><code style="font-family:'JetBrains Mono', monospace">--brand2</code><span style="color:#6E685F; margin-left:auto">secondary · promos</span></div>
+            <div style="display:flex; align-items:center; gap:12px"><span style="width:36px; height:36px; border-radius:9px; background:#E3A63B"></span><code style="font-family:'JetBrains Mono', monospace">--accent</code><span style="color:#6E685F; margin-left:auto">acento · “Especial”</span></div>
+            <div style="display:flex; align-items:center; gap:12px"><span style="width:36px; height:36px; border-radius:9px; background:#F5EFE6; border:1px solid #E6E2DA"></span><code style="font-family:'JetBrains Mono', monospace">--bg</code><span style="color:#6E685F; margin-left:auto">fondo</span></div>
+            <div style="display:flex; align-items:center; gap:12px"><span style="width:36px; height:36px; border-radius:9px; background:#1F1B16"></span><code style="font-family:'JetBrains Mono', monospace">--ink</code><span style="color:#6E685F; margin-left:auto">texto</span></div>
+          </div>
+          <div style="font-size:13px; color:#6E685F; margin-top:14px">Derivados con color-mix: <code style="font-family:'JetBrains Mono', monospace">--surface --muted --line --line-strong --img-bg --on-brand</code>. Tarjetas: <code style="font-family:'JetBrains Mono', monospace">--c-radius --c-ratio --c-pad --c-tf</code>.</div>
+        </div>
+        <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+          <div style="font-weight:700">Panel · paleta fija</div>
+          <div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; margin-top:14px; font-size:12px">
+            <div><div style="height:44px; border-radius:8px; background:#1C1A17"></div><div style="margin-top:4px; font-family:'JetBrains Mono', monospace">#1C1A17</div><div style="color:#6E685F">sidebar</div></div>
+            <div><div style="height:44px; border-radius:8px; background:#1B1916"></div><div style="margin-top:4px; font-family:'JetBrains Mono', monospace">#1B1916</div><div style="color:#6E685F">ink / primario</div></div>
+            <div><div style="height:44px; border-radius:8px; background:#F6F4F0; border:1px solid #E6E2DA"></div><div style="margin-top:4px; font-family:'JetBrains Mono', monospace">#F6F4F0</div><div style="color:#6E685F">canvas</div></div>
+            <div><div style="height:44px; border-radius:8px; background:#E6E2DA"></div><div style="margin-top:4px; font-family:'JetBrains Mono', monospace">#E6E2DA</div><div style="color:#6E685F">borde</div></div>
+            <div><div style="height:44px; border-radius:8px; background:#6E685F"></div><div style="margin-top:4px; font-family:'JetBrains Mono', monospace">#6E685F</div><div style="color:#6E685F">muted</div></div>
+            <div><div style="height:44px; border-radius:8px; background:#1F6B3F"></div><div style="margin-top:4px; font-family:'JetBrains Mono', monospace">#1F6B3F</div><div style="color:#6E685F">éxito</div></div>
+            <div><div style="height:44px; border-radius:8px; background:#8A4B0B"></div><div style="margin-top:4px; font-family:'JetBrains Mono', monospace">#8A4B0B</div><div style="color:#6E685F">aviso</div></div>
+            <div><div style="height:44px; border-radius:8px; background:#B3261E"></div><div style="margin-top:4px; font-family:'JetBrains Mono', monospace">#B3261E</div><div style="color:#6E685F">error</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding-top:44px">
+      <h2 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:30px">2. Tipografía, espaciado, radios</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px; margin-top:20px">
+        <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA; display:grid; gap:12px">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px"><span style="font-family:Gloock, serif; font-size:46px; line-height:1">Display</span><span style="font-size:12px; color:#6E685F; font-family:'JetBrains Mono', monospace">46 / 34 / 28</span></div>
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px"><span style="font-family:Gloock, serif; font-size:22px">Título de producto</span><span style="font-size:12px; color:#6E685F; font-family:'JetBrains Mono', monospace">22 / 20</span></div>
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px"><span style="font-weight:700; font-size:16px">UI fuerte · botones</span><span style="font-size:12px; color:#6E685F; font-family:'JetBrains Mono', monospace">16 / 700</span></div>
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px"><span style="font-size:15px">Cuerpo y descripciones</span><span style="font-size:12px; color:#6E685F; font-family:'JetBrains Mono', monospace">15 / 400</span></div>
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px"><span style="font-size:13px; color:#6E685F">Meta y ayudas</span><span style="font-size:12px; color:#6E685F; font-family:'JetBrains Mono', monospace">13 / 12</span></div>
+          <div style="font-size:13px; color:#6E685F; border-top:1px solid #F0EDE7; padding-top:12px">Pares configurables: Editorial (Gloock + Hanken Grotesk), Moderna, Clásica, Urbana, Suave. Inputs a 16 px en móvil para evitar zoom en iOS.</div>
+        </div>
+        <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+          <div style="font-weight:700">Espaciado · base 4</div>
+          <div style="display:flex; align-items:flex-end; gap:10px; margin-top:14px">
+            <div style="text-align:center; font-size:11px; color:#6E685F"><div style="width:4px; height:4px; background:#1B1916; margin:0 auto 6px"></div>4</div>
+            <div style="text-align:center; font-size:11px; color:#6E685F"><div style="width:8px; height:8px; background:#1B1916; margin:0 auto 6px"></div>8</div>
+            <div style="text-align:center; font-size:11px; color:#6E685F"><div style="width:12px; height:12px; background:#1B1916; margin:0 auto 6px"></div>12</div>
+            <div style="text-align:center; font-size:11px; color:#6E685F"><div style="width:16px; height:16px; background:#1B1916; margin:0 auto 6px"></div>16</div>
+            <div style="text-align:center; font-size:11px; color:#6E685F"><div style="width:24px; height:24px; background:#1B1916; margin:0 auto 6px"></div>24</div>
+            <div style="text-align:center; font-size:11px; color:#6E685F"><div style="width:32px; height:32px; background:#1B1916; margin:0 auto 6px"></div>32</div>
+            <div style="text-align:center; font-size:11px; color:#6E685F"><div style="width:48px; height:48px; background:#1B1916; margin:0 auto 6px"></div>48</div>
+          </div>
+          <div style="font-weight:700; margin-top:22px">Radios y sombras</div>
+          <div style="display:flex; gap:12px; margin-top:12px; flex-wrap:wrap; font-size:11px; color:#6E685F">
+            <div style="text-align:center"><div style="width:56px; height:56px; background:#F3F0EA; border:1px solid #E6E2DA; border-radius:8px"></div>8 · input</div>
+            <div style="text-align:center"><div style="width:56px; height:56px; background:#F3F0EA; border:1px solid #E6E2DA; border-radius:14px"></div>14 · card</div>
+            <div style="text-align:center"><div style="width:56px; height:56px; background:#F3F0EA; border:1px solid #E6E2DA; border-radius:24px"></div>24 · sheet</div>
+            <div style="text-align:center"><div style="width:56px; height:56px; background:#fff; border-radius:14px; box-shadow:0 12px 32px rgba(0,0,0,.12)"></div>dropdown</div>
+            <div style="text-align:center"><div style="width:56px; height:56px; background:#fff; border-radius:14px; box-shadow:0 30px 80px rgba(0,0,0,.3)"></div>modal</div>
+          </div>
+          <div style="font-size:13px; color:#6E685F; margin-top:14px">Touch targets ≥ 44 px en el menú público.</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding-top:44px">
+      <h2 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:30px">3. Componentes</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px; margin-top:20px">
+        <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA; display:grid; gap:14px">
+          <div style="font-weight:700">Botones</div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+            <button style="height:40px; padding:0 16px; border-radius:9px; border:none; background:#1B1916; color:#fff; font-weight:600">Primario</button>
+            <button style="height:40px; padding:0 16px; border-radius:9px; border:1px solid #1B1916; background:#fff; font-weight:600">Secundario</button>
+            <button style="height:40px; padding:0 16px; border-radius:9px; border:1px solid #DCD7CE; background:#fff; font-weight:600">Terciario</button>
+            <button style="height:40px; padding:0 16px; border-radius:9px; border:1px solid #E8C4C0; background:#FBEDEB; color:#B3261E; font-weight:600">Peligro</button>
+            <button disabled="" style="height:40px; padding:0 16px; border-radius:9px; border:none; background:#E6E2DA; color:#6E685F; font-weight:600">Deshabilitado</button>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap">
+            <button style="height:52px; padding:0 22px; border-radius:26px; border:none; background:#B4532A; color:#fff; font-weight:700">Agregar al carrito — $95</button>
+            <button style="height:52px; padding:0 22px; border-radius:26px; border:none; background:#128C4A; color:#fff; font-weight:700">Enviar pedido por WhatsApp</button>
+          </div>
+        </div>
+        <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA; display:grid; gap:14px">
+          <div style="font-weight:700">Badges de producto y estados</div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap">
+            <span style="padding:4px 9px; border-radius:20px; background:#1F4E2E; color:#fff; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase">Nuevo</span>
+            <span style="padding:4px 9px; border-radius:20px; background:#B4532A; color:#fff; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase">Popular</span>
+            <span style="padding:4px 9px; border-radius:20px; background:#E3A63B; color:#1b1408; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase">Especial</span>
+            <span style="padding:4px 9px; border-radius:20px; background:#1F1B16; color:#F5EFE6; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase">Recomendado</span>
+            <span style="padding:4px 9px; border-radius:20px; background:#5b5650; color:#fff; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase">Agotado</span>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap">
+            <span style="height:22px; padding:0 9px; border-radius:11px; background:#E3F1E7; color:#1F6B3F; font-size:12px; font-weight:700; display:inline-flex; align-items:center">Publicado</span>
+            <span style="height:22px; padding:0 9px; border-radius:11px; background:#EEE9E1; color:#5C554B; font-size:12px; font-weight:700; display:inline-flex; align-items:center">Borrador</span>
+            <span style="height:22px; padding:0 9px; border-radius:11px; background:#FBEBD7; color:#8A4B0B; font-size:12px; font-weight:700; display:inline-flex; align-items:center">Agotado</span>
+            <span style="height:22px; padding:0 9px; border-radius:11px; background:#E6E9EE; color:#3F4A5A; font-size:12px; font-weight:700; display:inline-flex; align-items:center">Oculto</span>
+            <span style="height:22px; padding:0 9px; border-radius:11px; background:#F1ECEC; color:#7A4F4F; font-size:12px; font-weight:700; display:inline-flex; align-items:center">Archivado</span>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+            <span style="height:40px; padding:0 16px; border-radius:20px; background:#1F1B16; color:#F5EFE6; font-weight:600; display:inline-flex; align-items:center">Chip activo</span>
+            <span style="height:40px; padding:0 16px; border-radius:20px; border:1px solid #CFC7BA; font-weight:600; display:inline-flex; align-items:center">Chip</span>
+            <span style="width:38px; height:22px; border-radius:11px; background:#1B1916; position:relative; display:inline-block"><span style="position:absolute; top:3px; left:19px; width:16px; height:16px; border-radius:50%; background:#fff"></span></span>
+            <span style="width:38px; height:22px; border-radius:11px; background:#D6D1C8; position:relative; display:inline-block"><span style="position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff"></span></span>
+          </div>
+        </div>
+        <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA; display:grid; gap:12px">
+          <div style="font-weight:700">Inputs</div>
+          <input placeholder="Texto" style="height:40px; padding:0 12px; border:1px solid #DCD7CE; border-radius:9px; font-size:14px; outline:none">
+          <div><input value="Ma" readOnly="" style="width:100%; height:40px; padding:0 12px; border:1.5px solid #B3261E; border-radius:9px; font-size:14px; outline:none"><div style="color:#B3261E; font-size:12.5px; margin-top:5px; font-weight:600">Escribe tu nombre.</div></div>
+          <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:12px; background:#1B1916; color:#F6F4F0; font-weight:600; width:max-content"><span style="width:8px; height:8px; border-radius:50%; background:#6FCF97"></span>Toast · Cambios guardados</div>
+        </div>
+        <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA">
+          <div style="font-weight:700">Estados de sistema</div>
+          <div style="display:grid; gap:8px; margin-top:12px; font-size:14px">
+            <div style="display:flex; justify-content:space-between; gap:12px; padding-bottom:8px; border-bottom:1px solid #F0EDE7"><span>Menú vacío</span><span style="color:#6E685F; text-align:right">No hay productos disponibles.</span></div>
+            <div style="display:flex; justify-content:space-between; gap:12px; padding-bottom:8px; border-bottom:1px solid #F0EDE7"><span>Categoría vacía</span><span style="color:#6E685F; text-align:right">Esta categoría aún no tiene productos.</span></div>
+            <div style="display:flex; justify-content:space-between; gap:12px; padding-bottom:8px; border-bottom:1px solid #F0EDE7"><span>Producto agotado</span><span style="color:#6E685F; text-align:right">Agotado temporalmente.</span></div>
+            <div style="display:flex; justify-content:space-between; gap:12px; padding-bottom:8px; border-bottom:1px solid #F0EDE7"><span>Carrito vacío</span><span style="color:#6E685F; text-align:right">Tu carrito está esperando algo delicioso.</span></div>
+            <div style="display:flex; justify-content:space-between; gap:12px; padding-bottom:8px; border-bottom:1px solid #F0EDE7"><span>Negocio cerrado</span><span style="color:#6E685F; text-align:right">Estamos cerrados. + próximo horario</span></div>
+            <div style="display:flex; justify-content:space-between; gap:12px; padding-bottom:8px; border-bottom:1px solid #F0EDE7"><span>Pedidos pausados</span><span style="color:#6E685F; text-align:right">Por el momento no estamos tomando pedidos.</span></div>
+            <div style="display:flex; justify-content:space-between; gap:12px"><span>Error</span><span style="color:#6E685F; text-align:right">Algo salió mal.</span></div>
+          </div>
+          <div style="font-size:13px; color:#6E685F; margin-top:12px">Todos se pueden ver en el menú con el control Demo → demoState. La carga inicial muestra skeletons.</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding-top:44px">
+      <h2 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:30px">4. Modelo de datos</h2>
+      <p style="margin:8px 0 0; color:#6E685F; max-width:720px">Implementado en <code style="font-family:'JetBrains Mono', monospace">data/demo.js</code>. Todo cuelga de Business; en el prototipo se guarda en localStorage y ambas pantallas lo leen en vivo.</p>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:12px; margin-top:20px; font-size:13px">
+        <sc-for list="{{ entities }}" as="e">
+          <div style="padding:16px; border-radius:12px; background:#fff; border:1px solid #E6E2DA">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px"><b style="font-size:15px">{{ e.name }}</b><span style="font-size:11.5px; color:#6E685F">{{ e.rel }}</span></div>
+            <div style="font-family:'JetBrains Mono', monospace; font-size:12px; line-height:1.7; color:#3B3730; margin-top:8px">{{ e.fields }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="padding-top:44px">
+      <h2 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:30px">5. Estructura y rutas</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px; margin-top:20px">
+        <pre style="margin:0; padding:22px; border-radius:14px; background:#1C1A17; color:#EDE8DF; font-family:'JetBrains Mono', monospace; font-size:12.5px; line-height:1.65; overflow-x:auto">/app
+  /menu/[slug]          página pública
+  /admin/(dashboard)    overview, orders, products…
+/components
+  /ui                   Button, Input, Badge, Toggle,
+                        Sheet, Modal, Drawer, Toast
+  /menu                 MenuHeader, CategoryNav,
+                        ProductCard(style, layout),
+                        ProductSheet, CartPanel,
+                        CheckoutFlow, OrderTicket
+  /dashboard            Sidebar, Breadcrumbs,
+                        DataTable, ConfirmDialog
+/products  /categories  /modifiers  /orders
+  → hooks + formularios por dominio
+/theme                  themeToCssVars(theme)
+/settings               schemas de configuración
+/lib
+  whatsapp.ts           generateWhatsAppMessage,
+                        openWhatsApp
+  pricing.ts            lineUnitPrice, cartTotals
+  hours.ts              businessStatus
+/data                   seed demo (Molienda)</pre>
+        <div style="padding:22px; border-radius:14px; background:#fff; border:1px solid #E6E2DA; display:grid; gap:12px; align-content:start">
+          <div style="font-weight:700">Flujo del cliente</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:13px; font-weight:600">
+            <span style="padding:6px 10px; border-radius:8px; background:#F3F0EA">Menú</span>→<span style="padding:6px 10px; border-radius:8px; background:#F3F0EA">Producto</span>→<span style="padding:6px 10px; border-radius:8px; background:#F3F0EA">Carrito</span>→<span style="padding:6px 10px; border-radius:8px; background:#F3F0EA">Modalidad</span>→<span style="padding:6px 10px; border-radius:8px; background:#F3F0EA">Datos</span>→<span style="padding:6px 10px; border-radius:8px; background:#F3F0EA">Confirmar</span>→<span style="padding:6px 10px; border-radius:8px; background:#128C4A; color:#fff">WhatsApp</span>
+          </div>
+          <div style="font-size:13.5px; color:#3B3730; line-height:1.6">
+            <div><b>QR de mesa:</b> <code style="font-family:'JetBrains Mono', monospace">/menu/molienda?mesa=7</code> precarga la mesa.</div>
+            <div><b>Breakpoints:</b> móvil &lt; 700 px (sheets, barra flotante), tablet 700–1099 (drawer de carrito), desktop ≥ 1100 (sidebar de categorías + carrito sticky).</div>
+            <div><b>Precios:</b> precio base + suma de opciones elegidas. Variantes, opciones y extras son ModifierGroup con kind distinto.</div>
+            <div><b>Pedidos:</b> al enviar se crea un Order local (status pending) para que el panel ya esté listo para pedidos reales.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding-top:44px">
+      <h2 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:30px">6. WhatsApp</h2>
+      <pre style="margin:20px 0 0; padding:22px; border-radius:14px; background:#1C1A17; color:#EDE8DF; font-family:'JetBrains Mono', monospace; font-size:12.5px; line-height:1.65; overflow-x:auto">generateWhatsAppMessage(order, business) → string
+  saludo (settings.greeting)
+  NOMBRE DEL NEGOCIO · PEDIDO #025
+  Modalidad · Cliente · Teléfono · Mesa | Hora de recogida
+  PRODUCTOS: qty × nombre — total   (variantes, extras, nota)
+  Subtotal · Descuento · Impuestos · Notas · Total
+  cierre (settings.closing)
+
+openWhatsApp(message, phone)
+  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(message))</pre>
+    </section>
+
+    <section style="padding-top:44px">
+      <h2 style="margin:0; font-family:Gloock, serif; font-weight:400; font-size:30px">7. Accesibilidad</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; margin-top:20px; font-size:14px">
+        <div style="padding:16px; border-radius:12px; background:#fff; border:1px solid #E6E2DA"><b>Contraste.</b> Texto sobre foto siempre con degradado oscuro; <code style="font-family:'JetBrains Mono', monospace">--on-brand</code> se calcula por luminancia del color principal.</div>
+        <div style="padding:16px; border-radius:12px; background:#fff; border:1px solid #E6E2DA"><b>Estado sin color.</b> Obligatorio/Opcional, Agotado y estados de pedido llevan texto, no solo color.</div>
+        <div style="padding:16px; border-radius:12px; background:#fff; border:1px solid #E6E2DA"><b>Controles.</b> Botones con aria-label en iconos, objetivos ≥ 44 px, inputs con label visible y errores en línea.</div>
+        <div style="padding:16px; border-radius:12px; background:#fff; border:1px solid #E6E2DA"><b>Movimiento.</b> Transiciones de 150–350 ms; en producción respetar prefers-reduced-motion.</div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const E = [
+      ['Business', 'raíz', 'id, name, slug, logo, description, address, phone, whatsapp, instagram, facebook, maps'],
+      ['Theme', '1:1 Business', 'primary, secondary, accent, background, text, fontPair, cardStyle, layout, heroEnabled, heroTitle, heroImage'],
+      ['Settings', '1:1 Business', 'dineIn, pickup, notesEnabled, scheduleEnabled, whatsappNumber, greeting, closing, currency, taxEnabled, taxRate, timezone, manualState'],
+      ['BusinessHours', '7:1 Business', 'day, active, ranges[[from,to]]'],
+      ['Category', 'N:1 Business', 'id, name, description, image, icon, order, visible'],
+      ['Product', 'N:1 Category', 'id, categoryId, name, description, price, compareAt, image, sku, tags[], badge, status, featured, modifierGroupIds[]'],
+      ['ModifierGroup', 'N:M Product', 'id, name, description, kind(variant|option|extra), type(single|multiple), required, max'],
+      ['ModifierOption', 'N:1 Group', 'id, name, price, isDefault, order'],
+      ['Promotion', 'N:1 Business', 'id, name, type(bogo|percent|price), productId | categoryId, value, start, end, active, banner'],
+      ['Order', 'N:1 Business', 'id, number, mode(dinein|pickup), customer{name, phone, table, guests, pickupTime}, notes, subtotal, discount, tax, total, status, source'],
+      ['OrderItem', 'N:1 Order', 'productId, qty, unit, mods[], notes, total'],
+    ];
+    return { entities: E.map(([name, rel, fields]) => ({ name, rel, fields })) };
+  }
+}
+</script>
+</body>
+</html>
