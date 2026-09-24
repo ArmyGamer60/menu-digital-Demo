@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { SESSION_COOKIE, SESSION_MAX_AGE, encodeSession, isValidEmail, safeNext } from "@/lib/auth";
+import { SESSION_COOKIE, SESSION_MAX_AGE, authMode, checkPassword, createSession, isValidEmail, safeNext } from "@/lib/auth";
 
 export interface LoginState {
   error: string | null;
@@ -15,13 +15,24 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
-/** Login mock: cualquier correo válido + contraseña no vacía. */
+/** Pausa ante credenciales incorrectas para frenar intentos por fuerza bruta. */
+const FAIL_DELAY_MS = 800;
+
+/** Login: correo válido + ADMIN_PASSWORD (en desarrollo sin ADMIN_PASSWORD, cualquier contraseña). */
 export async function login(_prev: LoginState, form: FormData): Promise<LoginState> {
   const email = String(form.get("email") ?? "");
+  if (authMode() === "disabled") {
+    return { error: "El panel está deshabilitado: falta configurar ADMIN_PASSWORD en el servidor.", email };
+  }
   const parsed = loginSchema.safeParse({ email, password: form.get("password") ?? "" });
-  if (!parsed.success) return { error: "Revisa tu correo y contraseña.", email };
+  if (!parsed.success || !(await checkPassword(parsed.data.password))) {
+    await new Promise((r) => setTimeout(r, FAIL_DELAY_MS));
+    return { error: "Revisa tu correo y contraseña.", email };
+  }
 
-  (await cookies()).set(SESSION_COOKIE, encodeSession(parsed.data.email), {
+  const token = await createSession(parsed.data.email);
+  if (!token) return { error: "No se pudo iniciar sesión.", email };
+  (await cookies()).set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

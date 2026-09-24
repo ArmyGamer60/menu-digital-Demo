@@ -1,10 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE, parseSession } from "@/lib/auth";
+import { SESSION_COOKIE, verifySession } from "@/lib/auth";
 
-/** Protege /admin/*: sin sesión → /admin/login?next=…; con sesión, /admin/login → /admin. */
-export function middleware(req: NextRequest) {
+/** Protege /admin/*: sin sesión firmada válida → /admin/login?next=…; con sesión, /admin/login → /admin. */
+export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
-  const authed = parseSession(req.cookies.get(SESSION_COOKIE)?.value) !== null;
+  const authed = (await verifySession(req.cookies.get(SESSION_COOKIE)?.value)) !== null;
   const isLogin = pathname === "/admin/login";
 
   if (isLogin) {
@@ -13,7 +13,9 @@ export function middleware(req: NextRequest) {
   if (!authed) {
     const url = new URL("/admin/login", req.url);
     url.searchParams.set("next", pathname + search);
-    return NextResponse.redirect(url);
+    const res = NextResponse.redirect(url);
+    res.cookies.delete(SESSION_COOKIE); // cookie inválida o de una contraseña anterior
+    return res;
   }
   return NextResponse.next();
 }

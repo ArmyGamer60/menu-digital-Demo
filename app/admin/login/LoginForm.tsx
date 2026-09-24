@@ -4,8 +4,8 @@ import { useActionState } from "react";
 import { login, type LoginState } from "../actions";
 import { PInput, PLabel } from "@/components/dashboard/ui";
 
-export function LoginForm({ next }: { next: string }) {
-  const [state, action, pending] = useActionState<LoginState, FormData>(login, { error: null, email: "andrea@molienda.mx" });
+export function LoginForm({ next, disabled }: { next: string; disabled: boolean }) {
+  const [state, action, pending] = useActionState<LoginState, FormData>(login, { error: null, email: "" });
   return (
     <form action={action} noValidate className="grid gap-4">
       <input type="hidden" name="next" value={next} />
@@ -33,7 +33,6 @@ export function LoginForm({ next }: { next: string }) {
           name="password"
           type="password"
           autoComplete="current-password"
-          defaultValue="molienda"
           aria-invalid={!!state.error || undefined}
           className="h-11 rounded-[10px] px-3.5 focus:shadow-[0_0_0_3px_rgba(27,25,22,.08)]"
         />
@@ -45,8 +44,8 @@ export function LoginForm({ next }: { next: string }) {
       ) : null}
       <button
         type="submit"
-        disabled={pending}
-        className="h-[46px] rounded-[10px] border-0 bg-p-ink text-[15px] font-bold text-white hover:bg-p-ink-hover disabled:cursor-wait"
+        disabled={pending || disabled}
+        className="h-[46px] rounded-[10px] border-0 bg-p-ink text-[15px] font-bold text-white hover:bg-p-ink-hover disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending ? "Entrando…" : "Entrar"}
       </button>

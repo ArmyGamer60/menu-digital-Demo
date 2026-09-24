@@ -30,7 +30,8 @@ git push -u origin main
 ## 3. Importar en Vercel
 1. vercel.com → **Add New… → Project** → importa el repo `menu-digital`.
 2. Framework: **Next.js** (se detecta solo). Build: `next build`. Output: automático.
-3. (Fase 2) En **Environment Variables** agrega:
+3. En **Settings → Environment Variables** agrega `ADMIN_PASSWORD` (contraseña del panel `/admin`; sin ella el panel queda deshabilitado en producción). Opcional: `ADMIN_SESSION_SECRET` (32+ caracteres aleatorios). Ver `.env.example`. Tras añadirla, **Redeploy** para que se aplique.
+   (Fase 2) Agrega también:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
