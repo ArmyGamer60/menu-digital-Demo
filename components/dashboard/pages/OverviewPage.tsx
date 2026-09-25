@@ -59,7 +59,7 @@ export function OverviewPage() {
         }
       />
 
-      <div className="mt-[22px] grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
+      <div className="mt-[22px] grid grid-cols-2 gap-3.5 max-sm:gap-2.5 sm:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
         {kpis.map((k) => (
           <Card key={k.label} pad={18} className="animate-[rise_.3s_ease-out_both]">
             <div className="text-[13px] font-semibold text-p-muted">{k.label}</div>
@@ -69,7 +69,7 @@ export function OverviewPage() {
         ))}
       </div>
 
-      <div className="mt-3.5 grid grid-cols-[repeat(auto-fit,minmax(340px,1fr))] gap-3.5">
+      <div className="mt-3.5 grid grid-cols-[repeat(auto-fit,minmax(min(340px,100%),1fr))] gap-3.5">
         <Card pad={20}>
           <div className="flex items-center justify-between">
             <CardTitle>Actividad reciente</CardTitle>
@@ -86,7 +86,7 @@ export function OverviewPage() {
                   onClick={() => openOrder(o)}
                   className="flex w-full items-center gap-3 border-0 border-b border-p-sep bg-transparent py-[11px] text-left"
                 >
-                  <span className="w-[42px] font-mono text-[12.5px] text-p-muted">{o.time}</span>
+                  <span className="w-[42px] font-mono text-[12.5px] text-p-muted max-sm:hidden">{o.time}</span>
                   <span className="w-12 font-bold">#{pad(o.number)}</span>
                   <span className="min-w-0 flex-1 truncate">
                     {o.customer.name} <span className="text-p-muted">· {orderModeShort(o)}</span>

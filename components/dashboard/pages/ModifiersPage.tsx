@@ -149,7 +149,7 @@ export function ModifiersPage() {
         }
       />
 
-      <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(290px,1fr))] gap-3.5">
+      <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(min(290px,100%),1fr))] gap-3.5">
         {business.modifierGroups.map((g) => {
           const used = usedIn(g.id);
           const k = GROUP_KIND[g.kind];

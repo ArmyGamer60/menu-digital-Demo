@@ -10,7 +10,13 @@ import {
   type DragEndEvent,
   type DragOverEvent,
 } from "@dnd-kit/core";
-import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { GripVertical, X } from "lucide-react";
 import { useState } from "react";
 import { Toggle } from "@/components/ui";
@@ -18,7 +24,17 @@ import { cn } from "@/lib/cn";
 import type { Category } from "@/types";
 import { useAdmin } from "../AdminProvider";
 import { newId } from "../productActions";
-import { IconBtn, PInput, PLabel, PageHeader, PButton, PanelDrawer, SettingRow, StatusPill, Thumb } from "../ui";
+import {
+  IconBtn,
+  PInput,
+  PLabel,
+  PageHeader,
+  PButton,
+  PanelDrawer,
+  SettingRow,
+  StatusPill,
+  Thumb,
+} from "../ui";
 
 type Indicator = "top" | "bottom" | null;
 
@@ -38,67 +54,101 @@ function CategoryRow({
   onRemove: () => void;
 }) {
   // Sin transform: el destino se marca con una línea ink (como el prototipo) en lugar de desplazar filas.
-  const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging } = useSortable({ id: cat.id });
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging } =
+    useSortable({ id: cat.id });
   return (
     <div
       ref={setNodeRef}
       className={cn(
-        "flex items-center gap-3.5 rounded-xl border bg-white px-4 py-3 transition-shadow duration-100",
+        "flex flex-wrap items-center gap-x-3.5 gap-y-2.5 rounded-xl border bg-white px-4 py-3 transition-shadow duration-100 max-sm:px-3",
         indicator ? "border-p-ink" : "border-p-card",
         indicator === "top" && "shadow-[0_-3px_0_#1B1916]",
         indicator === "bottom" && "shadow-[0_3px_0_#1B1916]",
         isDragging ? "opacity-45" : !cat.visible && "opacity-75",
       )}
     >
-      <button
-        ref={setActivatorNodeRef}
-        type="button"
-        aria-label={`Reordenar ${cat.name}`}
-        className="cursor-grab touch-none border-0 bg-transparent px-1 text-[#A39B8F] active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical size={18} />
-      </button>
-      <Thumb src={cat.image} className="flex size-12 items-center justify-center rounded-[10px] font-pdisplay text-xl text-p-muted">
-        {cat.image ? null : cat.name.charAt(0)}
-      </Thumb>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <b className="text-[15px] font-bold">{cat.name}</b>
-          {!cat.visible ? (
-            <StatusPill bg="#E6E9EE" fg="#3F4A5A" className="h-5 px-2 text-[11.5px]">
-              Oculta
-            </StatusPill>
-          ) : null}
+      <div className="flex min-w-0 flex-1 basis-[220px] items-center gap-3.5 max-sm:gap-2.5">
+        <button
+          ref={setActivatorNodeRef}
+          type="button"
+          aria-label={`Reordenar ${cat.name}`}
+          className="-my-2 cursor-grab touch-none border-0 bg-transparent px-1 py-2 text-[#A39B8F] active:cursor-grabbing max-sm:-ml-1 max-sm:px-1.5"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical size={18} />
+        </button>
+        <Thumb
+          src={cat.image}
+          className="flex size-12 items-center justify-center rounded-[10px] font-pdisplay text-xl text-p-muted"
+        >
+          {cat.image ? null : cat.name.charAt(0)}
+        </Thumb>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <b className="truncate text-[15px] font-bold">{cat.name}</b>
+            {!cat.visible ? (
+              <StatusPill
+                bg="#E6E9EE"
+                fg="#3F4A5A"
+                className="h-5 px-2 text-[11.5px]"
+              >
+                Oculta
+              </StatusPill>
+            ) : null}
+          </div>
+          <div className="mt-0.5 truncate text-[13px] text-p-muted">
+            {cat.description}
+          </div>
         </div>
-        <div className="mt-0.5 truncate text-[13px] text-p-muted">{cat.description}</div>
       </div>
-      <span className="text-[13px] whitespace-nowrap text-p-muted">
-        {count} {count === 1 ? "producto" : "productos"}
-      </span>
-      <Toggle checked={cat.visible} onChange={onToggle} label={`${cat.name} visible`} />
-      <PButton size="sm" onClick={onEdit}>
-        Editar
-      </PButton>
-      <IconBtn aria-label={`Eliminar ${cat.name}`} danger onClick={onRemove} className="border-p-input">
-        <X size={14} />
-      </IconBtn>
+      <div className="flex items-center gap-3.5 max-sm:w-full max-sm:gap-2.5 max-sm:border-t max-sm:border-p-sep max-sm:pt-2.5">
+        <span className="text-[13px] whitespace-nowrap text-p-muted max-sm:mr-auto">
+          {count} {count === 1 ? "producto" : "productos"}
+        </span>
+        <Toggle
+          checked={cat.visible}
+          onChange={onToggle}
+          label={`${cat.name} visible`}
+        />
+        <PButton size="sm" onClick={onEdit}>
+          Editar
+        </PButton>
+        <IconBtn
+          aria-label={`Eliminar ${cat.name}`}
+          danger
+          onClick={onRemove}
+          className="border-p-input"
+        >
+          <X size={14} />
+        </IconBtn>
+      </div>
     </div>
   );
 }
 
 export function CategoriesPage() {
   const { business, update, confirm, toast } = useAdmin();
-  const [drawer, setDrawer] = useState<{ draft: Category; isNew: boolean } | null>(null);
-  const [over, setOver] = useState<{ id: string; indicator: Indicator } | null>(null);
+  const [drawer, setDrawer] = useState<{
+    draft: Category;
+    isNew: boolean;
+  } | null>(null);
+  const [over, setOver] = useState<{ id: string; indicator: Indicator } | null>(
+    null,
+  );
   const sorted = [...business.categories].sort((a, b) => a.order - b.order);
-  const count = (id: string) => business.products.filter((p) => p.categoryId === id && p.status !== "archived").length;
-  const catName = (id: string | number) => sorted.find((c) => c.id === id)?.name ?? "la categoría";
+  const count = (id: string) =>
+    business.products.filter(
+      (p) => p.categoryId === id && p.status !== "archived",
+    ).length;
+  const catName = (id: string | number) =>
+    sorted.find((c) => c.id === id)?.name ?? "la categoría";
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   const onDragOver = ({ active, over: o }: DragOverEvent) => {
@@ -126,7 +176,9 @@ export function CategoriesPage() {
     const n = count(c.id);
     const ok = await confirm({
       title: `¿Eliminar la categoría “${c.name}”?`,
-      text: n ? `Sus ${n} productos pasarán a borrador sin categoría.` : "La categoría no tiene productos.",
+      text: n
+        ? `Sus ${n} productos pasarán a borrador sin categoría.`
+        : "La categoría no tiene productos.",
     });
     if (!ok) return;
     update((d) => {
@@ -137,7 +189,9 @@ export function CategoriesPage() {
           p.status = "draft";
         }
       });
-      d.promotions = d.promotions.filter((p) => p.categoryId !== c.id || p.type !== "percent");
+      d.promotions = d.promotions.filter(
+        (p) => p.categoryId !== c.id || p.type !== "percent",
+      );
     }, "Categoría eliminada");
   };
 
@@ -145,13 +199,19 @@ export function CategoriesPage() {
     if (!drawer) return;
     const item = { ...drawer.draft, name: drawer.draft.name.trim() };
     if (!item.name) return toast("Escribe un nombre");
-    update((d) => {
-      if (drawer.isNew) d.categories.push({ ...item, order: d.categories.length + 1 });
-      else d.categories = d.categories.map((x) => (x.id === item.id ? item : x));
-    }, drawer.isNew ? "Categoría creada" : "Categoría guardada");
+    update(
+      (d) => {
+        if (drawer.isNew)
+          d.categories.push({ ...item, order: d.categories.length + 1 });
+        else
+          d.categories = d.categories.map((x) => (x.id === item.id ? item : x));
+      },
+      drawer.isNew ? "Categoría creada" : "Categoría guardada",
+    );
     setDrawer(null);
   };
-  const setDr = <K extends keyof Category>(k: K, v: Category[K]) => setDrawer((d) => (d ? { ...d, draft: { ...d.draft, [k]: v } } : d));
+  const setDr = <K extends keyof Category>(k: K, v: Category[K]) =>
+    setDrawer((d) => (d ? { ...d, draft: { ...d.draft, [k]: v } } : d));
 
   return (
     <>
@@ -162,7 +222,17 @@ export function CategoriesPage() {
           <PButton
             variant="primary"
             onClick={() =>
-              setDrawer({ isNew: true, draft: { id: newId("cat"), name: "", description: "", image: "", visible: true, order: 0 } })
+              setDrawer({
+                isNew: true,
+                draft: {
+                  id: newId("cat"),
+                  name: "",
+                  description: "",
+                  image: "",
+                  visible: true,
+                  order: 0,
+                },
+              })
             }
           >
             Nueva categoría
@@ -177,16 +247,29 @@ export function CategoriesPage() {
         onDragEnd={onDragEnd}
         onDragCancel={() => setOver(null)}
         accessibility={{
-          screenReaderInstructions: { draggable: "Pulsa espacio para tomar la categoría, flechas para moverla y espacio para soltarla." },
+          screenReaderInstructions: {
+            draggable:
+              "Pulsa espacio para tomar la categoría, flechas para moverla y espacio para soltarla.",
+          },
           announcements: {
             onDragStart: ({ active }) => `Tomaste ${catName(active.id)}.`,
-            onDragOver: ({ active, over }) => (over ? `${catName(active.id)} está sobre ${catName(over.id)}.` : `${catName(active.id)} fuera de la lista.`),
-            onDragEnd: ({ active, over }) => (over ? `${catName(active.id)} se movió a la posición de ${catName(over.id)}.` : `${catName(active.id)} se soltó.`),
-            onDragCancel: ({ active }) => `Se canceló el movimiento de ${catName(active.id)}.`,
+            onDragOver: ({ active, over }) =>
+              over
+                ? `${catName(active.id)} está sobre ${catName(over.id)}.`
+                : `${catName(active.id)} fuera de la lista.`,
+            onDragEnd: ({ active, over }) =>
+              over
+                ? `${catName(active.id)} se movió a la posición de ${catName(over.id)}.`
+                : `${catName(active.id)} se soltó.`,
+            onDragCancel: ({ active }) =>
+              `Se canceló el movimiento de ${catName(active.id)}.`,
           },
         }}
       >
-        <SortableContext items={sorted.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+        <SortableContext
+          items={sorted.map((c) => c.id)}
+          strategy={verticalListSortingStrategy}
+        >
           <div className="mt-5 grid max-w-[900px] gap-2">
             {sorted.map((c) => (
               <CategoryRow
@@ -203,12 +286,16 @@ export function CategoriesPage() {
                     c.visible ? `${c.name} oculta` : `${c.name} visible`,
                   )
                 }
-                onEdit={() => setDrawer({ isNew: false, draft: structuredClone(c) })}
+                onEdit={() =>
+                  setDrawer({ isNew: false, draft: structuredClone(c) })
+                }
                 onRemove={() => void remove(c)}
               />
             ))}
             {!sorted.length ? (
-              <div className="rounded-[14px] border-[1.5px] border-dashed border-p-input p-10 text-center text-p-muted">Aún no hay categorías.</div>
+              <div className="rounded-[14px] border-[1.5px] border-dashed border-p-input p-10 text-center text-p-muted">
+                Aún no hay categorías.
+              </div>
             ) : null}
           </div>
         </SortableContext>
@@ -234,20 +321,44 @@ export function CategoriesPage() {
           <>
             <div>
               <PLabel htmlFor="cat-name">Nombre</PLabel>
-              <PInput id="cat-name" autoFocus value={drawer.draft.name} onChange={(e) => setDr("name", e.target.value)} placeholder="Ej. Desayunos" />
+              <PInput
+                id="cat-name"
+                autoFocus
+                value={drawer.draft.name}
+                onChange={(e) => setDr("name", e.target.value)}
+                placeholder="Ej. Desayunos"
+              />
             </div>
             <div>
               <PLabel htmlFor="cat-desc">Descripción</PLabel>
-              <PInput id="cat-desc" value={drawer.draft.description} onChange={(e) => setDr("description", e.target.value)} placeholder="Opcional" />
+              <PInput
+                id="cat-desc"
+                value={drawer.draft.description}
+                onChange={(e) => setDr("description", e.target.value)}
+                placeholder="Opcional"
+              />
             </div>
             <div>
               <PLabel htmlFor="cat-img" hint="(opcional)">
                 Imagen
               </PLabel>
-              <PInput id="cat-img" value={drawer.draft.image ?? ""} onChange={(e) => setDr("image", e.target.value)} placeholder="https://" className="text-[12.5px]" />
+              <PInput
+                id="cat-img"
+                value={drawer.draft.image ?? ""}
+                onChange={(e) => setDr("image", e.target.value)}
+                placeholder="https://"
+                className="text-[12.5px]"
+              />
             </div>
-            <SettingRow title="Visible en el menú" desc="Si la ocultas, sus productos no se muestran.">
-              <Toggle checked={drawer.draft.visible} onChange={(v) => setDr("visible", v)} label="Visible en el menú" />
+            <SettingRow
+              title="Visible en el menú"
+              desc="Si la ocultas, sus productos no se muestran."
+            >
+              <Toggle
+                checked={drawer.draft.visible}
+                onChange={(v) => setDr("visible", v)}
+                label="Visible en el menú"
+              />
             </SettingRow>
           </>
         ) : null}

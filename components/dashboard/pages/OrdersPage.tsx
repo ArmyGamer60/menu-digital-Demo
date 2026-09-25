@@ -27,7 +27,7 @@ export function OrdersPage() {
   return (
     <>
       <PageHeader title="Pedidos" sub="Los pedidos llegan por WhatsApp. Este registro se guarda al enviar desde el menú." />
-      <div className="mt-5 flex flex-wrap gap-1.5" role="tablist" aria-label="Filtrar por estado">
+      <div className="no-scrollbar mt-5 flex flex-wrap gap-1.5 max-sm:-mx-4 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-4" role="tablist" aria-label="Filtrar por estado">
         {tabs.map(([k, label, count]) => (
           <Seg key={k} role="tab" aria-selected={filter === k} active={filter === k} onClick={() => setFilter(k)}>
             {label} <span className="ml-1 opacity-60">{count}</span>
@@ -35,7 +35,37 @@ export function OrdersPage() {
         ))}
       </div>
 
-      <div className="mt-3.5 overflow-x-auto rounded-[14px] border border-p-card bg-white">
+      {/* Móvil: tarjetas */}
+      <ul className="m-0 mt-3.5 grid list-none gap-2 p-0 sm:hidden" aria-label="Pedidos">
+        {list.map((o) => (
+          <li key={o.id}>
+            <button
+              type="button"
+              onClick={() => openOrder(o)}
+              className="grid w-full gap-1.5 rounded-xl border border-p-card bg-white px-3.5 py-3 text-left"
+            >
+              <span className="flex items-center justify-between gap-2">
+                <span className="flex min-w-0 items-center gap-2">
+                  <b>#{pad(o.number)}</b>
+                  <span className="font-mono text-[12.5px] text-p-muted">{o.time}</span>
+                  {o.isNew ? <span className="rounded-[10px] bg-p-accent px-[7px] py-0.5 text-[11px] font-bold text-white">Nuevo</span> : null}
+                </span>
+                <OrderStatusPill status={o.status} />
+              </span>
+              <span className="flex items-baseline justify-between gap-3">
+                <b className="truncate font-semibold">{o.customer.name}</b>
+                <span className="tabular font-semibold">{m(o.total)}</span>
+              </span>
+              <span className="text-[13px] text-p-muted">
+                {orderModeLong(o)} · {itemCount(o)} {itemCount(o) === 1 ? "artículo" : "artículos"}
+              </span>
+            </button>
+          </li>
+        ))}
+        {!list.length ? <li className="rounded-xl border border-p-card bg-white p-8 text-center text-p-muted">No hay pedidos con este estado.</li> : null}
+      </ul>
+
+      <div className="mt-3.5 overflow-x-auto rounded-[14px] border border-p-card bg-white max-sm:hidden">
         <div className="min-w-[760px]" role="table" aria-label="Pedidos">
           <div
             role="row"

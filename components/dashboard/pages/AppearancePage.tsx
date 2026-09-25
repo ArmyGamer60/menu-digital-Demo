@@ -143,7 +143,7 @@ export function AppearancePage() {
     <>
       <PageHeader title="Apariencia" sub="Los cambios se guardan y se ven al instante en el menú público." />
 
-      <div className="mt-5 grid items-start gap-5 min-[1150px]:grid-cols-[minmax(0,1fr)_400px]">
+      <div className="mt-5 grid grid-cols-[minmax(0,1fr)] items-start gap-5 min-[1150px]:grid-cols-[minmax(0,1fr)_400px]">
         <div className="grid min-w-0 gap-4">
           <Card>
             <CardTitle className="mb-3.5">Branding</CardTitle>
@@ -236,7 +236,7 @@ export function AppearancePage() {
 
           <Card>
             <CardTitle className="mb-3">Tipografía</CardTitle>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(min(120px,100%),1fr))] gap-2">
               {(Object.keys(FONT_PAIRS) as FontPair[]).map((k) => (
                 <button key={k} type="button" aria-pressed={t.fontPair === k} onClick={() => setTheme("fontPair", k, `Tipografía ${FONT_PAIRS[k].label}`)} className={tile(t.fontPair === k)}>
                   <span className="block text-[30px] leading-none" style={{ fontFamily: fontPairFamilies(k).display }}>
@@ -253,7 +253,7 @@ export function AppearancePage() {
 
           <Card>
             <CardTitle className="mb-3">Estilo de tarjetas</CardTitle>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(min(120px,100%),1fr))] gap-2">
               {CARDS.map(([k, label]) => (
                 <button key={k} type="button" aria-pressed={t.cardStyle === k} onClick={() => setTheme("cardStyle", k, `Tarjetas: ${label}`)} className={tile(t.cardStyle === k)}>
                   <CardThumb k={k} />

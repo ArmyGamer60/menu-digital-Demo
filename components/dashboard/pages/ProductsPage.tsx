@@ -11,7 +11,7 @@ import { useAdmin } from "../AdminProvider";
 import { categoryName, useProductActions } from "../productActions";
 import { PRODUCT_STATUS, PageHeader, PButton, Seg, StatusPill, Thumb } from "../ui";
 
-const COLS = "grid-cols-[minmax(170px,2.2fr)_minmax(70px,1fr)_70px_80px_104px_64px_100px]";
+const COLS = "grid-cols-[minmax(170px,2.2fr)_minmax(min(70px,100%),1fr)_70px_80px_104px_64px_100px]";
 
 function RowMenu({ product, anchor, onClose }: { product: Product; anchor: DOMRect; onClose: () => void }) {
   const { duplicate, toggleArchive, remove } = useProductActions();
@@ -81,6 +81,21 @@ export function ProductsPage() {
   const count = (s: ProductStatus) => products.filter((p) => p.status === s).length;
   const cats = [...business.categories].sort((a, b) => a.order - b.order);
 
+  const moreButton = (p: Product) => (
+    <button
+      type="button"
+      aria-label={`Más acciones para ${p.name}`}
+      aria-haspopup="menu"
+      aria-expanded={menu?.id === p.id}
+      onMouseDown={(e) => menu?.id === p.id && e.stopPropagation()}
+      onClick={(e) => setMenu(menu?.id === p.id ? null : { id: p.id, anchor: e.currentTarget.getBoundingClientRect() })}
+      className="flex size-8 flex-none items-center justify-center rounded-lg border border-p-input bg-white"
+    >
+      <MoreHorizontal size={16} />
+    </button>
+  );
+  const menuProduct = menu ? products.find((p) => p.id === menu.id) : undefined;
+
   const toggleAvail = (p: Product) =>
     update(
       (d) => {
@@ -107,7 +122,7 @@ export function ProductsPage() {
       />
 
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <label className="flex h-[38px] max-w-[340px] min-w-[220px] flex-1 items-center gap-2 rounded-[9px] border border-p-input bg-white px-3 focus-within:border-p-ink">
+        <label className="flex h-[38px] max-w-[340px] min-w-[220px] flex-1 items-center max-sm:max-w-none max-sm:basis-full gap-2 rounded-[9px] border border-p-input bg-white px-3 focus-within:border-p-ink">
           <Search size={16} strokeWidth={1.8} className="text-p-muted" aria-hidden />
           <input
             value={q}
@@ -117,7 +132,7 @@ export function ProductsPage() {
             className="min-w-0 flex-1 border-0 bg-transparent outline-none"
           />
         </label>
-        <Select value={cat} onChange={(e) => setCat(e.target.value)} aria-label="Filtrar por categoría" className="h-[38px]">
+        <Select value={cat} onChange={(e) => setCat(e.target.value)} aria-label="Filtrar por categoría" className="h-[38px] max-sm:w-full">
           <option value="all">Todas las categorías</option>
           {cats.map((c) => (
             <option key={c.id} value={c.id}>
@@ -125,7 +140,7 @@ export function ProductsPage() {
             </option>
           ))}
         </Select>
-        <div className="flex flex-wrap gap-1" role="tablist" aria-label="Filtrar por estado">
+        <div className="no-scrollbar flex flex-wrap gap-1 max-sm:-mx-4 max-sm:w-[calc(100%+2rem)] max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-4" role="tablist" aria-label="Filtrar por estado">
           <Seg role="tab" aria-selected={status === "all"} active={status === "all"} onClick={() => setStatus("all")}>
             Todos <span className="ml-[3px] opacity-60">{products.filter((p) => p.status !== "archived").length}</span>
           </Seg>
@@ -137,7 +152,58 @@ export function ProductsPage() {
         </div>
       </div>
 
-      <div className="mt-3.5 overflow-x-auto rounded-[14px] border border-p-card bg-white">
+      {/* Móvil: tarjetas */}
+      <ul className="m-0 mt-3.5 grid list-none gap-2 p-0 sm:hidden" aria-label="Productos">
+        {rows.map((p) => {
+          const s = PRODUCT_STATUS[p.status];
+          const availEnabled = p.status === "published" || p.status === "soldout";
+          return (
+            <li key={p.id} className="rounded-xl border border-p-card bg-white p-3">
+              <Link href={`/admin/products/${p.id}`} className="flex min-w-0 items-center gap-3 no-underline">
+                <Thumb src={p.image} className="size-14 rounded-[10px]" />
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center font-semibold">
+                    <span className="truncate">{p.name}</span>
+                    {p.featured ? <Star size={12} className="ml-1.5 flex-none fill-p-accent text-p-accent" aria-label="Destacado" /> : null}
+                  </span>
+                  <span className="block truncate text-[12.5px] text-p-muted">
+                    {categoryName(business, p.categoryId)} · <span className="font-mono">{p.sku || "—"}</span>
+                  </span>
+                  <span className="mt-1 flex items-center gap-2">
+                    <span className="tabular font-semibold">{m(p.price)}</span>
+                    <StatusPill bg={s.bg} fg={s.fg}>
+                      {s.label}
+                    </StatusPill>
+                  </span>
+                </span>
+              </Link>
+              <div className="mt-2.5 flex items-center gap-2 border-t border-p-sep pt-2.5">
+                <label className={`mr-auto flex items-center gap-2 text-[13px] font-semibold ${availEnabled ? "" : "opacity-50"}`}>
+                  <Toggle
+                    checked={p.status === "published"}
+                    disabled={!availEnabled}
+                    onChange={() => toggleAvail(p)}
+                    label={`${p.name}: disponible / agotado`}
+                  />
+                  {p.status === "soldout" ? "Agotado" : "Disponible"}
+                </label>
+                <PButton size="sm" onClick={() => openEditor(p.id)}>
+                  Editar
+                </PButton>
+                {moreButton(p)}
+              </div>
+            </li>
+          );
+        })}
+        {!rows.length ? (
+          <li className="rounded-xl border border-p-card bg-white px-6 py-10 text-center">
+            <div className="font-pdisplay text-[22px]">Sin resultados</div>
+            <div className="mt-1.5 text-p-muted">Ajusta los filtros o crea un producto nuevo.</div>
+          </li>
+        ) : null}
+      </ul>
+
+      <div className="mt-3.5 overflow-x-auto rounded-[14px] border border-p-card bg-white max-sm:hidden">
         <div className="min-w-[760px]">
           <div
             className={`grid ${COLS} gap-3 rounded-t-[14px] border-b border-p-card bg-p-row px-[18px] py-3 text-xs font-bold tracking-[.05em] text-p-muted uppercase`}
@@ -184,21 +250,8 @@ export function ProductsPage() {
                   <PButton size="sm" onClick={() => openEditor(p.id)}>
                     Editar
                   </PButton>
-                  <button
-                    type="button"
-                    aria-label={`Más acciones para ${p.name}`}
-                    aria-haspopup="menu"
-                    aria-expanded={menu?.id === p.id}
-                    onMouseDown={(e) => menu?.id === p.id && e.stopPropagation()}
-                    onClick={(e) =>
-                      setMenu(menu?.id === p.id ? null : { id: p.id, anchor: e.currentTarget.getBoundingClientRect() })
-                    }
-                    className="flex size-8 items-center justify-center rounded-lg border border-p-input bg-white"
-                  >
-                    <MoreHorizontal size={16} />
-                  </button>
+                  {moreButton(p)}
                 </div>
-                {menu?.id === p.id ? <RowMenu product={p} anchor={menu.anchor} onClose={closeMenu} /> : null}
               </div>
             );
           })}
@@ -210,6 +263,7 @@ export function ProductsPage() {
           ) : null}
         </div>
       </div>
+      {menu && menuProduct ? <RowMenu product={menuProduct} anchor={menu.anchor} onClose={closeMenu} /> : null}
     </>
   );
 }

@@ -4,6 +4,7 @@ import {
   AlignLeft,
   Clock,
   LayoutDashboard,
+  Menu,
   Palette,
   PanelLeftClose,
   PanelLeftOpen,
@@ -14,6 +15,7 @@ import {
   Tag,
   User,
   Utensils,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -84,7 +86,23 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const { business, orders, user } = useAdmin();
   const now = useNow();
   const [collapsed, setCollapsed] = useState(false);
+  /** Móvil (< 640px): la sidebar es un drawer que se abre con ☰. */
+  const [mobileOpen, setMobileOpen] = useState(false);
   const crumbs = useCrumbs();
+
+  useEffect(() => setMobileOpen(false), [pathname]);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMobileOpen(false);
+    const mq = window.matchMedia("(min-width: 640px)");
+    const onMq = () => mq.matches && setMobileOpen(false);
+    document.addEventListener("keydown", onKey);
+    mq.addEventListener("change", onMq);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      mq.removeEventListener("change", onMq);
+    };
+  }, [mobileOpen]);
 
   useEffect(() => {
     try {
@@ -108,14 +126,24 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const st = now ? businessStatus(business, now) : null;
   const dot = st ? STATUS_COLORS[st.key] : "transparent";
 
-  // Etiquetas visibles: nunca con `collapsed`; con sidebar abierta solo ≥ 1000px.
-  const labelCls = collapsed ? "hidden" : "hidden min-[1000px]:inline";
+  // Etiquetas: en el drawer móvil siempre; en tablet ocultas (68px); ≥ 1000px según `collapsed`.
+  const show = (d: "inline" | "block") =>
+    cn(mobileOpen ? d : "hidden", "min-[640px]:hidden", !collapsed && (d === "inline" ? "min-[1000px]:inline" : "min-[1000px]:block"));
+  const labelCls = show("inline");
+  const rowCls = cn(mobileOpen && "max-[639px]:justify-start max-[639px]:px-2.5", !collapsed && "min-[1000px]:justify-start min-[1000px]:px-2.5");
 
   return (
     <div className="admin-root flex h-dvh bg-p-canvas font-pbody text-sm text-p-ink">
+      {mobileOpen ? (
+        <div aria-hidden onClick={() => setMobileOpen(false)} className="fixed inset-0 z-40 animate-fade-in bg-[rgba(20,18,15,.45)] min-[640px]:hidden" />
+      ) : null}
       <aside
+        id="admin-sidebar"
         className={cn(
-          "flex h-full w-[68px] flex-none flex-col bg-p-side text-[#F3EEE6] transition-[width] duration-200",
+          "h-full flex-none flex-col bg-p-side text-[#F3EEE6] transition-[width] duration-200 min-[640px]:flex min-[640px]:w-[68px]",
+          mobileOpen
+            ? "fixed inset-y-0 left-0 z-50 flex w-[264px] animate-[drawerInLeft_.28s_cubic-bezier(.2,.8,.2,1)] shadow-[20px_0_60px_rgba(0,0,0,.25)] min-[640px]:static min-[640px]:animate-none min-[640px]:shadow-none"
+            : "hidden",
           !collapsed && "min-[1000px]:w-[236px]",
         )}
       >
@@ -123,10 +151,20 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <span className="flex size-9 flex-none items-center justify-center rounded-[10px] bg-p-accent font-pdisplay text-[19px] text-white">
             {business.logoText}
           </span>
-          <div className={cn("min-w-0", collapsed ? "hidden" : "hidden min-[1000px]:block")}>
+          <div className={cn("min-w-0 flex-1", show("block"))}>
             <div className="truncate text-[14.5px] font-bold text-[#F3EEE6]">{business.name}</div>
             <div className="truncate text-xs text-p-side-muted">/menu/{business.slug}</div>
           </div>
+          {mobileOpen ? (
+            <button
+              type="button"
+              aria-label="Cerrar menú"
+              onClick={() => setMobileOpen(false)}
+              className="flex size-9 flex-none items-center justify-center rounded-[9px] border-0 bg-white/6 text-[#F3EEE6] min-[640px]:hidden"
+            >
+              <X size={18} />
+            </button>
+          ) : null}
         </div>
 
         <nav aria-label="Panel" className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2.5 py-1.5">
@@ -135,7 +173,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <div
                 className={cn(
                   "px-2.5 pt-3.5 pb-1.5 text-[11px] font-bold tracking-[.09em] text-p-side-label uppercase",
-                  collapsed ? "hidden" : "hidden min-[1000px]:block",
+                  show("block"),
                 )}
               >
                 {g.group}
@@ -150,8 +188,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
                     title={item.label}
                     aria-current={on ? "page" : undefined}
                     className={cn(
-                      "relative flex h-[38px] w-full items-center justify-center gap-2.5 rounded-[9px] no-underline transition-colors hover:bg-white/6 hover:!text-inherit",
-                      !collapsed && "min-[1000px]:justify-start min-[1000px]:px-2.5",
+                      "relative flex h-[38px] w-full items-center justify-center gap-2.5 rounded-[9px] no-underline transition-colors hover:bg-white/6 hover:!text-inherit max-[639px]:h-11",
+                      rowCls,
                       on ? "bg-white/10 font-bold text-white" : "font-medium text-p-side-text",
                     )}
                   >
@@ -162,7 +200,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
                         aria-label={`${pending} pendientes`}
                         className={cn(
                           "flex h-5 min-w-5 items-center justify-center rounded-[10px] bg-p-accent px-1.5 text-[11px] font-bold text-white",
-                          collapsed ? "absolute -top-0.5 right-0.5" : "absolute -top-0.5 right-0.5 min-[1000px]:static",
+                          "absolute -top-0.5 right-0.5",
+                          mobileOpen && "max-[639px]:static",
+                          !collapsed && "min-[1000px]:static",
                         )}
                       >
                         {pending}
@@ -183,7 +223,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             title="Ver menú público"
             className={cn(
               "flex h-10 items-center justify-center gap-2.5 rounded-[9px] bg-white/6 font-semibold text-[#F3EEE6] no-underline hover:!text-white",
-              !collapsed && "min-[1000px]:justify-start min-[1000px]:px-2.5",
+              rowCls,
             )}
           >
             <SquareArrowOutUpRight size={18} strokeWidth={1.7} className="flex-none" aria-hidden />
@@ -206,15 +246,26 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-[60px] flex-none items-center gap-4 border-b border-p-card bg-p-canvas px-7 max-[640px]:px-4">
+        <header className="flex h-[60px] flex-none items-center gap-4 border-b border-p-card bg-p-canvas px-7 max-[639px]:gap-2.5 max-[639px]:px-4">
+          <button
+            type="button"
+            aria-label="Abrir menú"
+            aria-expanded={mobileOpen}
+            aria-controls="admin-sidebar"
+            onClick={() => setMobileOpen(true)}
+            className="relative -ml-1 flex size-10 flex-none items-center justify-center rounded-[9px] border border-p-input bg-white min-[640px]:hidden"
+          >
+            <Menu size={18} />
+            {pending > 0 ? <span className="absolute -top-1 -right-1 size-2.5 rounded-full border-2 border-p-canvas bg-p-accent" /> : null}
+          </button>
           <nav aria-label="Ruta" className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-[13.5px] whitespace-nowrap text-p-muted">
             {crumbs.map((c, i) => {
               const last = i === crumbs.length - 1;
               return (
                 <Fragment key={i}>
-                  {i > 0 ? <span className="text-[#B8B1A6]">/</span> : null}
+                  {i > 0 ? <span className="text-[#B8B1A6] max-[639px]:hidden">/</span> : null}
                   {c.href && !last ? (
-                    <Link href={c.href} className="font-medium text-p-muted no-underline">
+                    <Link href={c.href} className="font-medium text-p-muted no-underline max-[639px]:hidden">
                       {c.label}
                     </Link>
                   ) : (
@@ -228,10 +279,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
           </nav>
           <Link
             href="/admin/hours"
-            className="flex h-[34px] items-center gap-2 rounded-[17px] border border-p-input bg-white px-3 text-[13px] font-semibold text-p-ink no-underline"
+            aria-label={st ? `Estado: ${st.label}` : "Estado"}
+            className="flex h-[34px] flex-none items-center gap-2 rounded-[17px] border border-p-input bg-white px-3 text-[13px] font-semibold whitespace-nowrap text-p-ink no-underline"
           >
             <span className="size-2 flex-none rounded-full" style={{ background: dot, boxShadow: `0 0 0 3px ${st ? dot + "33" : "transparent"}` }} />
-            <span className={st ? undefined : "invisible"}>{st?.label ?? "Abierto"}</span>
+            <span className={cn(st ? undefined : "invisible", "max-[400px]:hidden")}>{st?.label ?? "Abierto"}</span>
           </Link>
           <Link
             href="/admin/account"
@@ -243,7 +295,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </header>
 
         <main id="admin-scroll" className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-[1240px] px-7 pt-7 pb-10 max-[640px]:px-4">
+          <div className="mx-auto max-w-[1240px] px-7 pt-7 pb-10 max-[639px]:px-4 max-[639px]:pt-5">
             {children}
             <Credit className="mt-20 text-p-muted" />
           </div>

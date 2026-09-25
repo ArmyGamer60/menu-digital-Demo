@@ -31,7 +31,7 @@ export function HoursPage() {
     <>
       <PageHeader title="Horarios" sub="El estado manual tiene prioridad sobre el horario semanal." />
 
-      <div className="mt-5 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-2.5" role="radiogroup" aria-label="Estado manual">
+      <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-[repeat(auto-fit,minmax(190px,1fr))]" role="radiogroup" aria-label="Estado manual">
         {MANUAL.map((s) => {
           const on = manual === s.key;
           return (

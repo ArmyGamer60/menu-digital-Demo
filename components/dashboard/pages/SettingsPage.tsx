@@ -68,18 +68,24 @@ export function SettingsPage() {
             aria-selected={tab === k}
             onClick={() => setTab(k)}
             className={cn(
-              "-mb-px h-10 border-0 border-b-2 bg-transparent px-3.5 whitespace-nowrap",
+              "-mb-px h-10 border-0 border-b-2 bg-transparent px-3.5 whitespace-nowrap max-sm:px-2.5",
               tab === k ? "border-p-ink font-bold text-p-ink" : "border-transparent font-medium text-p-muted",
             )}
           >
-            {label}
+            {k === "regional" ? (
+              <>
+                Moneda<span className="max-sm:hidden"> e impuestos</span>
+              </>
+            ) : (
+              label
+            )}
           </button>
         ))}
       </div>
 
       <div className="mt-5 max-w-[880px]" role="tabpanel">
         {tab === "negocio" ? (
-          <Card className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3.5">
+          <Card className="grid grid-cols-[repeat(auto-fit,minmax(min(260px,100%),1fr))] gap-3.5">
             {BIZ_FIELDS.map((f) => (
               <div key={f.k} className={f.wide ? "col-span-full" : undefined}>
                 <PLabel htmlFor={`biz-${f.k}`}>{f.label}</PLabel>
@@ -131,7 +137,7 @@ export function SettingsPage() {
         ) : null}
 
         {tab === "whatsapp" ? (
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] items-start gap-4">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(320px,100%),1fr))] items-start gap-4">
             <Card className="grid gap-3.5">
               <div>
                 <PLabel htmlFor="wa-num">Número de WhatsApp</PLabel>
@@ -178,7 +184,7 @@ export function SettingsPage() {
 
         {tab === "regional" ? (
           <Card className="grid gap-[18px]">
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3.5">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(min(220px,100%),1fr))] gap-3.5">
               <div>
                 <PLabel htmlFor="rg-cur">Moneda</PLabel>
                 <Select id="rg-cur" className="w-full" value={s.currency} onChange={(e) => setS("currency", e.target.value as Currency, "Moneda actualizada")}>

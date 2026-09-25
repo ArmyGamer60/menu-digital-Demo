@@ -11,7 +11,7 @@ export function AccountPage() {
   return (
     <>
       <h1 className="m-0 font-pdisplay text-[34px] leading-[1.15] font-normal tracking-[-.015em]">Cuenta</h1>
-      <div className="mt-5 grid max-w-[1000px] grid-cols-[repeat(auto-fit,minmax(320px,1fr))] items-start gap-4">
+      <div className="mt-5 grid max-w-[1000px] grid-cols-[repeat(auto-fit,minmax(min(320px,100%),1fr))] items-start gap-4">
         <Card>
           <div className="flex items-center gap-3.5">
             <div className="flex size-14 items-center justify-center rounded-full bg-[#E6DFD3] text-lg font-bold">{user.initials}</div>

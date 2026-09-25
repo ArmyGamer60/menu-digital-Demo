@@ -162,7 +162,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
         title={isNew ? "Nuevo producto" : "Editar producto"}
         sub={isNew ? "Completa la información y publícalo cuando esté listo." : `SKU ${draft.sku || "—"} · ${PRODUCT_STATUS[draft.status].label}`}
         actions={
-          <>
+          <div className="flex flex-wrap gap-2 max-sm:hidden">
             <PButton onClick={() => save("draft")}>Guardar como borrador</PButton>
             <PButton variant="secondary" onClick={() => save()}>
               Guardar
@@ -170,12 +170,12 @@ export function ProductEditor({ productId }: { productId: string | null }) {
             <PButton variant="primary" onClick={() => save("published")}>
               Guardar y publicar
             </PButton>
-          </>
+          </div>
         }
       />
 
-      <div className="mt-[22px] grid items-start gap-[18px] min-[1150px]:grid-cols-[minmax(0,1.6fr)_minmax(300px,1fr)]">
-        <div className="grid min-w-0 gap-[18px]">
+      <div className="mt-[22px] grid grid-cols-[minmax(0,1fr)] items-start gap-[18px] min-[1150px]:grid-cols-[minmax(0,1.6fr)_minmax(300px,1fr)]">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-[18px]">
           <Card>
             <CardTitle className="mb-4">Información básica</CardTitle>
             <div className="grid gap-3.5">
@@ -209,7 +209,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                   placeholder="Qué lleva, cómo se sirve"
                 />
               </div>
-              <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-3">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(min(140px,100%),1fr))] gap-3">
                 <div>
                   <PLabel htmlFor="pe-price">Precio</PLabel>
                   <PrefixInput
@@ -266,7 +266,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
               </div>
             </div>
             {picker ? (
-              <div className="mt-4 grid animate-[rise_.2s] grid-cols-[repeat(auto-fill,minmax(76px,1fr))] gap-2">
+              <div className="mt-4 grid animate-[rise_.2s] grid-cols-[repeat(auto-fill,minmax(min(76px,100%),1fr))] gap-2">
                 {GALLERY.map((src) => (
                   <button
                     key={src}
@@ -344,7 +344,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
           </Card>
         </div>
 
-        <div className="grid min-w-0 gap-[18px]">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-[18px]">
           <Card pad={20}>
             <CardTitle className="mb-3">Estado</CardTitle>
             <div className="grid gap-1.5" role="radiogroup" aria-label="Estado">
@@ -473,6 +473,17 @@ export function ProductEditor({ productId }: { productId: string | null }) {
             </Card>
           ) : null}
         </div>
+      </div>
+
+      {/* Móvil: acciones fijas abajo, siempre a mano mientras se edita. */}
+      <div className="sticky bottom-0 z-10 -mx-4 mt-5 grid grid-cols-2 gap-2 border-t border-p-card bg-p-canvas/95 px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur sm:hidden">
+        <PButton onClick={() => save("draft")}>Borrador</PButton>
+        <PButton variant="secondary" onClick={() => save()}>
+          Guardar
+        </PButton>
+        <PButton variant="primary" className="col-span-2" onClick={() => save("published")}>
+          Guardar y publicar
+        </PButton>
       </div>
     </>
   );

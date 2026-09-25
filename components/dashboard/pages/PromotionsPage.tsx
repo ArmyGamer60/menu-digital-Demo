@@ -91,7 +91,7 @@ export function PromotionsPage() {
         }
       />
 
-      <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-3.5">
+      <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(min(320px,100%),1fr))] gap-3.5">
         {business.promotions.map((p) => (
           <div key={p.id} className="overflow-hidden rounded-[14px] border border-p-card bg-white">
             <div
