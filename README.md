@@ -35,6 +35,13 @@ Para ver el prototipo: abrir los `.dc.html` en un navegador con un servidor loca
 | Fuentes | `next/font/google` | Gloock, Hanken Grotesk, JetBrains Mono + pares alternativos |
 | Imágenes | `next/image` + Supabase Storage (fase 2) | Añadir `images.unsplash.com` a `remotePatterns` para el seed |
 
+### Estado actual: multi-negocio en Postgres
+- Datos en Postgres (`lib/db.ts`, `lib/schema.ts`, `lib/repo.ts`): `businesses` (el menú como JSONB + slug, dominio, estado, contador), `users`, `memberships`, `orders`, `slug_redirects`. En desarrollo sin `DATABASE_URL` se usa PGlite en `./.data/pglite`; los tests usan PGlite en memoria y el driver real contra un socket local.
+- Cuentas con correo y contraseña (PBKDF2) y cookie firmada. La primera cuenta (con `ADMIN_PASSWORD`) es superadmin y gestiona negocios en `/admin/negocios`; los dueños solo acceden a sus negocios.
+- El panel guarda con Server Actions (`app/admin/(panel)/data.ts`) y revalida `/menu/[slug]`; los pedidos se registran en la BD (`app/menu/actions.ts`) con numeración atómica por negocio.
+- Dominio propio por negocio: el middleware reescribe `https://dominio/` → `/sites/[host]`.
+- Ver `DEPLOY_VERCEL.md` y `.env.example`.
+
 ### Fases
 1. **Fase 1 — Front completo con datos seed** (desplegable en Vercel ya): menú público funcional + WhatsApp, panel navegable con estado en memoria/localStorage (igual que el prototipo).
 2. **Fase 2 — Persistencia real:** Supabase (tablas del modelo de datos), Auth para `/admin`, Storage para imágenes/logos, RLS por `business_id`. El menú público lee de la BD con ISR (`revalidate` al guardar en admin).

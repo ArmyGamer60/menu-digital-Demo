@@ -2,16 +2,25 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { Credit } from "@/components/ui";
 import { authMode, safeNext } from "@/lib/auth";
+import { DbConfigError } from "@/lib/db";
+import { countUsers } from "@/lib/repo";
 import { LoginForm } from "./LoginForm";
 
 export const metadata: Metadata = { title: "Entrar — menu.app", robots: { index: false } };
 
-// Lee ADMIN_PASSWORD en cada petición (no en build).
+// Lee variables de entorno y la base de datos en cada petición (no en build).
 export const dynamic = "force-dynamic";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const { next } = await searchParams;
   const mode = authMode();
+  let firstRun = false;
+  let dbError: string | null = null;
+  try {
+    firstRun = (await countUsers()) === 0;
+  } catch (e) {
+    dbError = e instanceof DbConfigError ? e.message : "No se pudo conectar con la base de datos.";
+  }
   return (
     <div className="grid min-h-dvh bg-p-canvas font-pbody text-sm text-p-ink min-[900px]:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <div className="flex flex-col justify-between gap-10 px-12 py-10 max-[520px]:px-6">
@@ -26,15 +35,24 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </p>
           {mode === "disabled" ? (
             <div role="alert" className="mb-4 rounded-[10px] border border-p-danger-line bg-p-danger-bg px-3.5 py-3 text-[13px] font-semibold text-danger">
-              El panel está deshabilitado: falta configurar la variable de entorno ADMIN_PASSWORD.
+              El panel está deshabilitado: falta configurar SESSION_SECRET o ADMIN_PASSWORD en el servidor.
             </div>
           ) : null}
-          <LoginForm next={safeNext(next)} disabled={mode === "disabled"} />
+          {dbError ? (
+            <div role="alert" className="mb-4 rounded-[10px] border border-p-danger-line bg-p-danger-bg px-3.5 py-3 text-[13px] font-semibold text-danger">
+              {dbError}
+            </div>
+          ) : null}
+          {firstRun && mode !== "disabled" ? (
+            <div className="mb-4 rounded-[10px] border border-p-card bg-white px-3.5 py-3 text-[13px] leading-normal">
+              <b>Primera vez:</b> entra con tu correo y la contraseña de <span className="font-mono">ADMIN_PASSWORD</span>
+              {mode === "dev" ? " (en desarrollo, cualquiera)" : ""}. Esa cuenta será la administradora de la plataforma.
+            </div>
+          ) : null}
+          <LoginForm next={safeNext(next)} disabled={mode === "disabled" || !!dbError} />
         </div>
         <div className="text-[12.5px] text-p-muted">
-          {mode === "dev-any"
-            ? "Modo desarrollo: sin ADMIN_PASSWORD, cualquier contraseña entra."
-            : "Demo · los datos se guardan en este navegador."}
+          {mode === "dev" ? "Modo desarrollo · base de datos local." : "¿Olvidaste tu contraseña? Pide una nueva a quien te dio de alta."}
           <Credit className="mt-1.5 text-left text-p-muted" />
         </div>
       </div>

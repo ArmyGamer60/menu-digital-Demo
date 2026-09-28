@@ -43,3 +43,6 @@ next-env.d.ts
 # claude code (local)
 .claude/settings.local.json
 !.env.example
+
+# base de datos local (PGlite)
+/.data/

@@ -5,7 +5,7 @@ import { Credit, Toast, useToast } from "@/components/ui";
 import { businessStatus, zonedClock } from "@/lib/hours";
 import { money } from "@/lib/money";
 import { cartTotals, defaultSelections, describeSelections, lineUnitPrice } from "@/lib/pricing";
-import { createOrder, getBusinessById, subscribeBusiness } from "@/lib/repo";
+import { getNextOrderNumber, submitOrder } from "@/app/menu/actions";
 import { asStyle, themeToCssVars } from "@/lib/theme";
 import { getCartStore } from "@/stores/cart";
 import type { Business, CardStyle, CartLine, Layout, OrderDraft, Product } from "@/types";
@@ -68,18 +68,7 @@ export function MenuApp({ initialBusiness }: { initialBusiness: Business }) {
     void cart.persist.rehydrate();
   }, [cart]);
 
-  const load = useCallback(async () => {
-    try {
-      const b = await getBusinessById(initialBusiness.id);
-      if (!b) throw new Error("not found");
-      setBusiness(b);
-      setLoadState("ready");
-    } catch {
-      setLoadState("error");
-    }
-  }, [initialBusiness.id]);
-
-  // ?mesa=N, ?demo=closed|paused|empty|error|loading, ?card=…, ?layout=… + cambios guardados desde el panel.
+  // ?mesa=N, ?demo=closed|paused|empty|error|loading, ?card=…, ?layout=…
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     setTableFromQr((q.get("mesa") ?? "").trim().slice(0, 12));
@@ -95,9 +84,20 @@ export function MenuApp({ initialBusiness }: { initialBusiness: Business }) {
       if (d === "error") setLoadState("error");
       if (d === "loading") setLoadState("loading");
     }
-    if (d !== "error" && d !== "loading") void load();
-    return subscribeBusiness(initialBusiness.id, setBusiness);
-  }, [slug, load, initialBusiness.id]);
+  }, [slug]);
+
+  // Vista previa del panel (Apariencia): el iframe recibe los cambios sin guardar vía postMessage.
+  useEffect(() => {
+    if (window.parent === window) return;
+    const onMessage = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin || e.source !== window.parent) return;
+      const data = e.data as { type?: string; business?: Business } | null;
+      if (data?.type === "md:preview" && data.business?.id === initialBusiness.id) setBusiness(data.business);
+    };
+    window.addEventListener("message", onMessage);
+    window.parent.postMessage({ type: "md:preview-ready" }, window.location.origin);
+    return () => window.removeEventListener("message", onMessage);
+  }, [initialBusiness.id]);
 
   // Al pasar a desktop el carrito es fijo: cerrar el drawer/sheet.
   useEffect(() => {
@@ -121,7 +121,7 @@ export function MenuApp({ initialBusiness }: { initialBusiness: Business }) {
     };
   }, [theme.background]);
 
-  // Favicon subido desde el panel (fase 1 vive en localStorage; fase 2 lo sirve generateMetadata).
+  // Favicon del negocio (también lo declara generateMetadata; esto cubre la vista previa del panel).
   useEffect(() => {
     if (!business.favicon) return;
     let link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
@@ -258,19 +258,23 @@ export function MenuApp({ initialBusiness }: { initialBusiness: Business }) {
     if (!canOrder || !lines.length) return;
     setCartOpen(false);
     setStep("mode");
+    // Número fresco del servidor: la página puede venir de caché con un contador atrasado.
+    getNextOrderNumber(business.id).then(
+      (n) => n && setBusiness((b) => ({ ...b, orderCounter: Math.max(b.orderCounter, n - 1) })),
+      () => {},
+    );
   };
 
   const onSent = (draft: OrderDraft) => {
     cart.getState().clear();
-    createOrder(business.id, draft)
-      .then((order) => setBusiness((b) => ({ ...b, orderCounter: order.number })))
+    submitOrder(business.id, draft)
+      .then((r) => setBusiness((b) => ({ ...b, orderCounter: "number" in r ? r.number : draft.number })))
       .catch(() => setBusiness((b) => ({ ...b, orderCounter: draft.number })));
   };
 
   const retry = () => {
     setDemo(null);
-    setLoadState("loading");
-    void load();
+    setLoadState("ready");
   };
 
   const ready = loadState === "ready";

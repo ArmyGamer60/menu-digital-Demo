@@ -4,8 +4,9 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" }],
   },
-  async redirects() {
-    return [{ source: "/", destination: "/menu/molienda", permanent: false }];
+  experimental: {
+    // El panel guarda el documento completo del menú (logos/favicons en base64 incluidos).
+    serverActions: { bodySizeLimit: "6mb" },
   },
 };
 

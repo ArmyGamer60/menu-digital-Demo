@@ -49,7 +49,7 @@ const TIMEZONES: [string, string][] = [
 ];
 
 export function SettingsPage() {
-  const { business, orders, update, toast, confirm, reset } = useAdmin();
+  const { business, orders, update, toast, confirm, reset, isDemo, user, customDomain } = useAdmin();
   const [tab, setTab] = useState<Tab>("negocio");
   const s = business.settings;
   const setS = <K extends keyof Settings>(k: K, v: Settings[K], msg?: string) => update((d) => void (d.settings[k] = v), msg);
@@ -98,14 +98,27 @@ export function SettingsPage() {
                     const v = f.k === "slug" ? sanitizeSlug(e.target.value) : e.target.value;
                     update((d) => void (d[f.k] = v));
                   }}
-                  onBlur={f.k === "slug" && !business.slug.replace(/-/g, "") ? () => update((d) => void (d.slug = "mi-negocio"), "Slug restablecido") : undefined}
+                  onBlur={
+                    f.k === "slug" && !business.slug.replace(/-/g, "")
+                      ? () => update((d) => void (d.slug = "mi-negocio"), "Slug restablecido")
+                      : undefined
+                  }
                 />
                 {f.k === "slug" ? (
                   <Help>
                     URL pública:{" "}
                     <a href={`/menu/${business.slug}`} target="_blank" rel="noopener noreferrer">
-                      menu.app/menu/{business.slug}
+                      /menu/{business.slug}
                     </a>
+                    {customDomain ? (
+                      <>
+                        {" · Dominio propio: "}
+                        <a href={`https://${customDomain}`} target="_blank" rel="noopener noreferrer">
+                          {customDomain}
+                        </a>
+                      </>
+                    ) : null}
+                    . Si cambias el slug, el enlace anterior redirige al nuevo.
                   </Help>
                 ) : null}
               </div>
@@ -162,8 +175,8 @@ export function SettingsPage() {
                 <PTextarea id="wa-close" rows={2} value={s.closing} onChange={(e) => setS("closing", e.target.value)} />
               </div>
               <div className="text-[12.5px] leading-normal text-p-muted">
-                La plantilla incluye automáticamente: negocio, número de pedido, modalidad, cliente, teléfono, mesa u hora, productos,
-                variantes, extras, notas, subtotal, descuento y total.
+                La plantilla incluye automáticamente: negocio, número de pedido, modalidad, cliente, teléfono, mesa u hora, productos, variantes,
+                extras, notas, subtotal, descuento y total.
               </div>
             </Card>
             <div>
@@ -187,7 +200,12 @@ export function SettingsPage() {
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(220px,100%),1fr))] gap-3.5">
               <div>
                 <PLabel htmlFor="rg-cur">Moneda</PLabel>
-                <Select id="rg-cur" className="w-full" value={s.currency} onChange={(e) => setS("currency", e.target.value as Currency, "Moneda actualizada")}>
+                <Select
+                  id="rg-cur"
+                  className="w-full"
+                  value={s.currency}
+                  onChange={(e) => setS("currency", e.target.value as Currency, "Moneda actualizada")}
+                >
                   <option value="MXN">MXN — Peso mexicano</option>
                   <option value="USD">USD — Dólar</option>
                   <option value="EUR">EUR — Euro</option>
@@ -196,7 +214,12 @@ export function SettingsPage() {
               </div>
               <div>
                 <PLabel htmlFor="rg-tz">Zona horaria</PLabel>
-                <Select id="rg-tz" className="w-full" value={s.timezone} onChange={(e) => setS("timezone", e.target.value, "Zona horaria actualizada")}>
+                <Select
+                  id="rg-tz"
+                  className="w-full"
+                  value={s.timezone}
+                  onChange={(e) => setS("timezone", e.target.value, "Zona horaria actualizada")}
+                >
                   {TIMEZONES.some(([v]) => v === s.timezone) ? null : <option value={s.timezone}>{s.timezone}</option>}
                   {TIMEZONES.map(([v, label]) => (
                     <option key={v} value={v}>
@@ -231,27 +254,29 @@ export function SettingsPage() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between gap-4 border-t border-p-sep pt-4">
-              <div>
-                <div className="font-bold">Restablecer datos demo</div>
-                <div className="text-[13px] text-p-muted">Vuelve al menú, horarios y apariencia originales.</div>
+            {isDemo && user.isSuperadmin ? (
+              <div className="flex items-center justify-between gap-4 border-t border-p-sep pt-4">
+                <div>
+                  <div className="font-bold">Restablecer datos demo</div>
+                  <div className="text-[13px] text-p-muted">Vuelve al menú, horarios y apariencia originales.</div>
+                </div>
+                <PButton
+                  variant="danger"
+                  size="md"
+                  className="h-9 rounded-lg"
+                  onClick={async () => {
+                    const ok = await confirm({
+                      title: "¿Restablecer datos demo?",
+                      text: "Se perderán los cambios hechos en menú, horarios, apariencia y pedidos.",
+                      label: "Restablecer",
+                    });
+                    if (ok) await reset();
+                  }}
+                >
+                  Restablecer
+                </PButton>
               </div>
-              <PButton
-                variant="danger"
-                size="md"
-                className="h-9 rounded-lg"
-                onClick={async () => {
-                  const ok = await confirm({
-                    title: "¿Restablecer datos demo?",
-                    text: "Se perderán los cambios hechos en menú, horarios, apariencia y pedidos.",
-                    label: "Restablecer",
-                  });
-                  if (ok) await reset();
-                }}
-              >
-                Restablecer
-              </PButton>
-            </div>
+            ) : null}
           </Card>
         ) : null}
       </div>

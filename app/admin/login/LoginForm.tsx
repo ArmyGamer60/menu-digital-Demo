@@ -26,7 +26,7 @@ export function LoginForm({ next, disabled }: { next: string; disabled: boolean 
           <label htmlFor="password" className="text-[13px] font-semibold">
             Contraseña
           </label>
-          <span className="text-[13px] text-p-muted">¿La olvidaste?</span>
+          
         </div>
         <PInput
           id="password"

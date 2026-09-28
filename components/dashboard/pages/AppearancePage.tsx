@@ -65,7 +65,7 @@ function CardThumb({ k }: { k: CardStyle }) {
   );
 }
 
-/** Vista previa en vivo: iframe del menú real. Se actualiza solo vía evento `storage` al guardar. */
+/** Vista previa en vivo: iframe del menú real; recibe cada cambio por postMessage (antes de guardarse). */
 function LivePreview({ business }: { business: Business }) {
   const [mode, setMode] = useState<"mobile" | "desktop">("mobile");
   const boxRef = useRef<HTMLDivElement>(null);
@@ -77,7 +77,19 @@ function LivePreview({ business }: { business: Business }) {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  const src = `/menu/${business.slug}`;
+  const [src] = useState(() => `/menu/${business.slug}?preview=1`);
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const latest = useRef(business);
+  latest.current = business;
+  const send = () => frameRef.current?.contentWindow?.postMessage({ type: "md:preview", business: latest.current }, window.location.origin);
+  useEffect(send, [business, mode]);
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      if (e.origin === window.location.origin && (e.data as { type?: string } | null)?.type === "md:preview-ready") send();
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
   const scale = w / 1280;
 
   return (
@@ -102,11 +114,12 @@ function LivePreview({ business }: { business: Business }) {
       <div ref={boxRef}>
         {mode === "mobile" ? (
           <div className="mx-auto h-[760px] w-full max-w-[390px] overflow-hidden rounded-[36px] border-[10px] border-p-side bg-white shadow-[0_20px_50px_rgba(0,0,0,.15)]">
-            <iframe src={src} title="Vista previa del menú (móvil)" className="block size-full border-0" />
+            <iframe ref={frameRef} src={src} title="Vista previa del menú (móvil)" className="block size-full border-0" />
           </div>
         ) : (
           <div className="relative overflow-hidden rounded-xl border border-p-card bg-white" style={{ height: Math.max(w, 320) * 0.75 }}>
             <iframe
+              ref={frameRef}
               src={src}
               title="Vista previa del menú (desktop)"
               className="absolute top-0 left-0 border-0"
@@ -115,7 +128,7 @@ function LivePreview({ business }: { business: Business }) {
           </div>
         )}
       </div>
-      <a href={src} target="_blank" rel="noopener noreferrer" className="mt-2.5 inline-block text-[13px] font-semibold">
+      <a href={`/menu/${business.slug}`} target="_blank" rel="noopener noreferrer" className="mt-2.5 inline-block text-[13px] font-semibold">
         Abrir en una pestaña nueva
       </a>
     </div>

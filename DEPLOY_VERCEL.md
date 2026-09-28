@@ -30,20 +30,30 @@ git push -u origin main
 ## 3. Importar en Vercel
 1. vercel.com → **Add New… → Project** → importa el repo `menu-digital`.
 2. Framework: **Next.js** (se detecta solo). Build: `next build`. Output: automático.
-3. En **Settings → Environment Variables** agrega `ADMIN_PASSWORD` (contraseña del panel `/admin`; sin ella el panel queda deshabilitado en producción). Opcional: `ADMIN_SESSION_SECRET` (32+ caracteres aleatorios). Ver `.env.example`. Tras añadirla, **Redeploy** para que se aplique.
-   (Fase 2) Agrega también:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   Tip: Vercel → Storage / Marketplace → **Supabase** crea el proyecto y carga las variables automáticamente.
-4. **Deploy.** Obtendrás `https://menu-digital.vercel.app`. Tu menú: `/menu/molienda`, panel: `/admin`.
+3. **Base de datos:** Vercel → tu proyecto → **Storage → Create Database → Neon** (Postgres, plan gratis) → conéctala al proyecto (Production, Preview y Development). Vercel agrega `DATABASE_URL` sola. Las tablas y el negocio demo se crean en la primera visita.
+4. En **Settings → Environment Variables** agrega:
+   - `ADMIN_PASSWORD`: contraseña para crear tu cuenta de superadmin la primera vez.
+   - `SESSION_SECRET`: 32+ caracteres aleatorios (firma las sesiones).
+   Ver `.env.example`. Tras añadirlas, **Redeploy** para que se apliquen.
+5. **Deploy.** Obtendrás `https://menu-digital.vercel.app`. Tu menú: `/menu/molienda`, panel: `/admin`.
+6. **Primera entrada:** `/admin/login` con tu correo y la contraseña de `ADMIN_PASSWORD`. Esa cuenta queda como superadmin (después puedes cambiar la contraseña en Cuenta).
+
+## Gestionar clientes (multi-negocio)
+- Panel → **Negocios** (`/admin/negocios`, solo superadmin): crea un negocio (en blanco o copia del demo), asigna el correo del dueño y copia los datos de acceso para enviárselos.
+- **Abrir panel** entra al panel de cualquier negocio para darle soporte. El selector de la esquina superior izquierda cambia de negocio.
+- Cada dueño solo ve su(s) negocio(s). **Accesos** agrega socios, genera contraseñas nuevas o quita accesos.
+- **Suspender** oculta el menú público (p. ej. por falta de pago) sin borrar nada.
 
 Cada `git push` a `main` redepliega; cada rama/PR genera una URL de preview.
 
 Alternativa sin GitHub: `npm i -g vercel && vercel` (y `vercel --prod` para producción).
 
-## 4. Dominio propio (opcional)
-Vercel → Project → **Settings → Domains** → agrega `menu.tunegocio.com` y crea el registro DNS que te indique (CNAME a `cname.vercel-dns.com`).
+## Dominio propio de un cliente (opcional)
+1. Vercel → Project → **Settings → Domains** → agrega `menu.sucafe.com`.
+2. En el DNS del cliente: CNAME `menu` → `cname.vercel-dns.com` (o registro A `76.76.21.21` si es el dominio raíz).
+3. Panel → Negocios → ⋯ → **Dominio propio** → guarda `menu.sucafe.com`. La raíz de ese dominio muestra su menú.
+Si usas un dominio propio para la app (ej. `menudigital.mx`), agrégalo en `APP_HOSTS` para que no se trate como dominio de un cliente.
+Para incrustar el menú en la web del cliente: `<iframe src="https://TU-APP/menu/su-slug" style="width:100%;height:100vh;border:0"></iframe>`.
 
 ## 5. QR por mesa
 Genera un QR por mesa apuntando a:
@@ -55,7 +65,7 @@ https://TU-DOMINIO/menu/molienda?mesa=7
 ## Checklist antes de producción
 - [ ] Cambiar el número de WhatsApp en Configuración → WhatsApp (formato `52` + 10 dígitos).
 - [ ] Reemplazar fotos Unsplash por fotos reales.
-- [ ] Fase 2 activa (sin ella, lo que edites en el panel solo vive en tu navegador).
-- [ ] Login real (Supabase Auth) antes de compartir `/admin`.
+- [ ] Base de datos conectada (`DATABASE_URL`) y `SESSION_SECRET` configurada.
+- [ ] Plan Pro de Vercel si vas a cobrar (el plan Hobby no permite uso comercial).
 - [ ] Probar el envío en un teléfono real (iOS y Android) — WhatsApp debe abrir con el mensaje.
 - [ ] Favicon, título y Open Graph (`generateMetadata` con nombre y foto del negocio).

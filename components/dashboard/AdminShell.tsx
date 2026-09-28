@@ -2,6 +2,7 @@
 
 import {
   AlignLeft,
+  Building2,
   Clock,
   LayoutDashboard,
   Menu,
@@ -26,6 +27,7 @@ import { Credit } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { businessStatus, STATUS_COLORS } from "@/lib/hours";
 import { useAdmin } from "./AdminProvider";
+import { BusinessSwitcher } from "./BusinessSwitcher";
 
 interface NavDef {
   href: string;
@@ -83,7 +85,7 @@ function useCrumbs(): { label: string; href?: string }[] {
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { business, orders, user } = useAdmin();
+  const { business, orders, user, suspended } = useAdmin();
   const now = useNow();
   const [collapsed, setCollapsed] = useState(false);
   /** Móvil (< 640px): la sidebar es un drawer que se abre con ☰. */
@@ -148,13 +150,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         )}
       >
         <div className="flex items-center gap-2.5 px-3.5 pt-[18px] pb-3.5">
-          <span className="flex size-9 flex-none items-center justify-center rounded-[10px] bg-p-accent font-pdisplay text-[19px] text-white">
-            {business.logoText}
-          </span>
-          <div className={cn("min-w-0 flex-1", show("block"))}>
-            <div className="truncate text-[14.5px] font-bold text-[#F3EEE6]">{business.name}</div>
-            <div className="truncate text-xs text-p-side-muted">/menu/{business.slug}</div>
-          </div>
+          <BusinessSwitcher labelClassName={show("block")} />
           {mobileOpen ? (
             <button
               type="button"
@@ -216,6 +212,19 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="grid gap-1 border-t border-white/8 px-2.5 pt-3 pb-4">
+          {user.isSuperadmin ? (
+            <Link
+              href="/admin/negocios"
+              title="Negocios"
+              className={cn(
+                "flex h-10 items-center justify-center gap-2.5 rounded-[9px] font-semibold text-p-side-text no-underline hover:bg-white/6 hover:!text-white",
+                rowCls,
+              )}
+            >
+              <Building2 size={18} strokeWidth={1.7} className="flex-none" aria-hidden />
+              <span className={labelCls}>Negocios</span>
+            </Link>
+          ) : null}
           <a
             href={`/menu/${business.slug}`}
             target="_blank"
@@ -296,6 +305,21 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
         <main id="admin-scroll" className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-[1240px] px-7 pt-7 pb-10 max-[639px]:px-4 max-[639px]:pt-5">
+            {suspended ? (
+              <div role="alert" className="mb-5 rounded-[10px] border border-p-danger-line bg-p-danger-bg px-3.5 py-3 text-[13.5px] font-semibold text-danger">
+                Este negocio está suspendido: su menú público no se muestra. Puedes seguir editándolo.
+              </div>
+            ) : null}
+            {!business.settings.whatsappNumber && pathname !== "/admin/settings" ? (
+              <div role="status" className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-p-card bg-white px-3.5 py-3 text-[13.5px]">
+                <span>
+                  <b>Falta tu número de WhatsApp.</b> Sin él los pedidos del menú no te llegan.
+                </span>
+                <Link href="/admin/settings" className="font-semibold">
+                  Configurar
+                </Link>
+              </div>
+            ) : null}
             {children}
             <Credit className="mt-20 text-p-muted" />
           </div>

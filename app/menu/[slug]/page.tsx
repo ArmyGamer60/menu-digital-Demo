@@ -1,43 +1,36 @@
 import type { Metadata, Viewport } from "next";
+import { permanentRedirect } from "next/navigation";
+import { cache } from "react";
 import { MenuApp } from "@/components/menu/MenuApp";
-import { MenuLoader } from "@/components/menu/MenuLoader";
-import { getBusinessBySlug, listBusinessSlugs } from "@/lib/repo";
+import { MenuUnavailable } from "@/components/menu/MenuUnavailable";
+import { menuMetadata, menuViewport } from "@/components/menu/menuMetadata";
+import { getBusinessRowBySlug, resolveSlugRedirect } from "@/lib/repo";
 
 type Params = { slug: string };
 
-// ISR: fase 2 revalida con revalidatePath('/menu/' + slug) al guardar en el panel.
-export const revalidate = 300;
+// ISR: se regenera al guardar en el panel (revalidatePath) y, como red de seguridad, cada 60 s.
+export const revalidate = 60;
 
-export async function generateStaticParams(): Promise<Params[]> {
-  return (await listBusinessSlugs()).map((slug) => ({ slug }));
-}
+const load = cache((slug: string) => getBusinessRowBySlug(decodeURIComponent(slug)));
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const { slug } = await params;
-  const business = await getBusinessBySlug(slug);
-  if (!business) return { title: "Menú no encontrado" };
-  return {
-    title: `${business.name} — Menú digital`,
-    description: business.description,
-    openGraph: {
-      title: `${business.name} — ${business.tagline}`,
-      description: business.description,
-      images: business.theme.heroImage ? [business.theme.heroImage] : undefined,
-    },
-    icons: business.favicon ? [{ url: business.favicon }] : undefined,
-  };
+  const row = await load((await params).slug);
+  return menuMetadata(row?.status === "active" ? row.business : null);
 }
 
 export async function generateViewport({ params }: { params: Promise<Params> }): Promise<Viewport> {
-  const { slug } = await params;
-  const business = await getBusinessBySlug(slug);
-  return { themeColor: business?.theme.background };
+  return menuViewport((await load((await params).slug))?.business);
 }
 
 export default async function MenuPage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  const business = await getBusinessBySlug(slug);
-  // Sin coincidencia en el servidor: puede ser un slug renombrado en el panel (fase 1, localStorage).
-  if (!business) return <MenuLoader slug={slug} />;
-  return <MenuApp initialBusiness={business} />;
+  const row = await load(slug);
+  if (!row) {
+    // Slug renombrado desde el panel: los QR impresos con el slug anterior siguen funcionando.
+    const current = await resolveSlugRedirect(decodeURIComponent(slug));
+    if (current) permanentRedirect(`/menu/${current}`);
+    return <MenuUnavailable kind="missing" />;
+  }
+  if (row.status !== "active") return <MenuUnavailable kind="suspended" theme={row.business.theme} />;
+  return <MenuApp initialBusiness={row.business} />;
 }

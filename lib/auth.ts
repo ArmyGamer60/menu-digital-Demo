@@ -1,14 +1,14 @@
-/* Sesión del panel (fase 1): contraseña única en la variable de entorno ADMIN_PASSWORD
-   y cookie httpOnly firmada con HMAC-SHA256 (Web Crypto: funciona en middleware/edge y en Node).
-   Fase 2: Supabase Auth.
+/* Sesión del panel: cookie httpOnly `<id de usuario en base64url>.<expira>.<firma HMAC-SHA256>`.
+   Web Crypto: funciona en el middleware (edge) y en Node. Los usuarios viven en la base de datos.
 
    Variables:
-   - ADMIN_PASSWORD        contraseña del panel (obligatoria en producción; sin ella el panel queda cerrado).
-   - ADMIN_SESSION_SECRET  opcional; clave de firma. Si falta se deriva de ADMIN_PASSWORD
-                           (cambiar la contraseña invalida todas las sesiones).
-   En desarrollo, sin ADMIN_PASSWORD se acepta cualquier contraseña no vacía. */
+   - SESSION_SECRET   clave de firma (32+ caracteres aleatorios). Recomendada en producción.
+   - ADMIN_PASSWORD   contraseña para crear la primera cuenta (superadmin) cuando aún no hay usuarios.
+                      Si falta SESSION_SECRET también se usa para derivar la clave de firma.
+   En producción sin ninguna de las dos el panel queda cerrado. En desarrollo hay una clave fija. */
 
 export const SESSION_COOKIE = "md_session";
+export const BUSINESS_COOKIE = "md_biz";
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -16,18 +16,18 @@ const DEV_SECRET = "menu-digital-dev-only-secret";
 
 export const isValidEmail = (email: string) => EMAIL_RE.test(email);
 
-export type AuthMode = "password" | "dev-any" | "disabled";
+export type AuthMode = "ready" | "dev" | "disabled";
 
-/** "password": ADMIN_PASSWORD configurada · "dev-any": desarrollo sin contraseña · "disabled": producción sin configurar. */
+/** "ready": producción configurada · "dev": desarrollo · "disabled": producción sin clave de firma. */
 export function authMode(env: NodeJS.ProcessEnv = process.env): AuthMode {
-  if (env.ADMIN_PASSWORD) return "password";
-  return env.NODE_ENV === "production" ? "disabled" : "dev-any";
+  if (env.SESSION_SECRET || env.ADMIN_SESSION_SECRET || env.ADMIN_PASSWORD) return env.NODE_ENV === "production" ? "ready" : "dev";
+  return env.NODE_ENV === "production" ? "disabled" : "dev";
 }
 
 function signingSecret(env: NodeJS.ProcessEnv = process.env): string | null {
-  const mode = authMode(env);
-  if (mode === "disabled") return null;
-  return env.ADMIN_SESSION_SECRET || (mode === "password" ? `pw:${env.ADMIN_PASSWORD}` : DEV_SECRET);
+  const s = env.SESSION_SECRET || env.ADMIN_SESSION_SECRET || (env.ADMIN_PASSWORD ? `pw:${env.ADMIN_PASSWORD}` : "");
+  if (s) return s;
+  return env.NODE_ENV === "production" ? null : DEV_SECRET;
 }
 
 const enc = new TextEncoder();
@@ -52,25 +52,22 @@ function safeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-/** ¿La contraseña es válida para el modo actual? */
-export async function checkPassword(input: string, env: NodeJS.ProcessEnv = process.env): Promise<boolean> {
-  const mode = authMode(env);
-  if (mode === "disabled") return false;
-  if (mode === "dev-any") return input.length > 0;
-  // Se comparan HMACs (misma longitud) para no filtrar la longitud ni el contenido por tiempo.
-  const key = signingSecret(env)!;
+/** Primera cuenta: ¿la contraseña coincide con ADMIN_PASSWORD? (en desarrollo sin ADMIN_PASSWORD, cualquiera). */
+export async function checkBootstrapPassword(input: string, env: NodeJS.ProcessEnv = process.env): Promise<boolean> {
+  if (!env.ADMIN_PASSWORD) return env.NODE_ENV !== "production" && input.length > 0;
+  const key = signingSecret(env) ?? DEV_SECRET;
   return safeEqual(await hmac(key, `pw:${input}`), await hmac(key, `pw:${env.ADMIN_PASSWORD}`));
 }
 
-/** Valor de cookie: `<correo en base64url>.<expira>.<firma>`. null si el panel está deshabilitado. */
-export async function createSession(email: string, env: NodeJS.ProcessEnv = process.env, now = Date.now()): Promise<string | null> {
+/** Valor de cookie para el usuario. null si el panel está deshabilitado. */
+export async function createSession(userId: string, env: NodeJS.ProcessEnv = process.env, now = Date.now()): Promise<string | null> {
   const secret = signingSecret(env);
   if (!secret) return null;
-  const payload = `${b64url(enc.encode(email.trim().toLowerCase()))}.${Math.floor(now / 1000) + SESSION_MAX_AGE}`;
+  const payload = `${b64url(enc.encode(userId))}.${Math.floor(now / 1000) + SESSION_MAX_AGE}`;
   return `${payload}.${await hmac(secret, payload)}`;
 }
 
-/** Devuelve el correo si la cookie tiene firma válida y no ha expirado; si no, null. */
+/** Devuelve el id de usuario si la cookie tiene firma válida y no ha expirado; si no, null. */
 export async function verifySession(
   value: string | undefined | null,
   env: NodeJS.ProcessEnv = process.env,
@@ -80,34 +77,39 @@ export async function verifySession(
   if (!value || !secret) return null;
   const parts = value.split(".");
   if (parts.length !== 3) return null;
-  const [encEmail, exp, sig] = parts as [string, string, string];
-  if (!safeEqual(sig, await hmac(secret, `${encEmail}.${exp}`))) return null;
+  const [encId, exp, sig] = parts as [string, string, string];
+  if (!safeEqual(sig, await hmac(secret, `${encId}.${exp}`))) return null;
   if (!(Number(exp) * 1000 > now)) return null;
   try {
-    const email = fromB64url(encEmail);
-    return isValidEmail(email) ? email : null;
+    const id = fromB64url(encId);
+    return /^[\w-]{3,64}$/.test(id) ? id : null;
   } catch {
     return null;
   }
 }
 
 export interface SessionUser {
+  id: string;
   email: string;
+  name: string;
   /** "andrea@molienda.mx" → "Andrea". */
   firstName: string;
   initials: string;
+  isSuperadmin: boolean;
 }
 
-export function sessionUser(email: string): SessionUser {
-  const local = email.split("@")[0] ?? email;
-  const parts = local.split(/[._-]+/).filter(Boolean);
+export function sessionUser(u: { id: string; email: string; name: string; isSuperadmin: boolean }): SessionUser {
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  const first = cap(parts[0] ?? local);
+  const source = u.name.trim() || (u.email.split("@")[0] ?? u.email);
+  const parts = source.split(/[\s._-]+/).filter(Boolean);
+  const first = cap(parts[0] ?? source);
   const initials = ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? parts[0]?.[1] ?? "")).toUpperCase();
-  return { email, firstName: first, initials: initials || "?" };
+  return { id: u.id, email: u.email, name: u.name, firstName: first, initials: initials || "?", isSuperadmin: u.isSuperadmin };
 }
 
 /** Solo rutas internas del panel como destino post-login. */
 export function safeNext(next: string | null | undefined): string {
-  return next && next.startsWith("/admin") && !next.startsWith("//") && !next.startsWith("/admin/login") ? next : "/admin";
+  return next && next.startsWith("/admin") && !next.startsWith("//") && !next.startsWith("/admin/login") && !next.startsWith("/admin/salir")
+    ? next
+    : "/admin";
 }
