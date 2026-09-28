@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
+import { redirect } from "next/navigation";
 import { cache } from "react";
 import { MenuApp } from "@/components/menu/MenuApp";
 import { MenuUnavailable } from "@/components/menu/MenuUnavailable";
 import { menuMetadata, menuViewport } from "@/components/menu/menuMetadata";
 import { getBusinessRowByDomain } from "@/lib/repo";
 
-/* Menú servido en el dominio propio del negocio (el middleware reescribe "/" → /sites/<host>). */
+/* Menú servido en el dominio propio del negocio (el middleware reescribe "/" → /sites/<host>).
+   Un dominio sin negocio asignado (p. ej. el dominio principal de la app) se comporta como la raíz: abre el menú demo. */
 
 type Params = { host: string };
 
@@ -24,7 +26,7 @@ export async function generateViewport({ params }: { params: Promise<Params> }):
 
 export default async function DomainMenuPage({ params }: { params: Promise<Params> }) {
   const row = await load((await params).host);
-  if (!row) return <MenuUnavailable kind="missing" />;
+  if (!row) redirect(`/menu/${process.env.DEFAULT_MENU_SLUG || "molienda"}`);
   if (row.status !== "active") return <MenuUnavailable kind="suspended" theme={row.business.theme} />;
   return <MenuApp initialBusiness={row.business} />;
 }

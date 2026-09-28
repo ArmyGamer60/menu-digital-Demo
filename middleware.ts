@@ -23,11 +23,12 @@ export async function middleware(req: NextRequest) {
   // Dominio propio de un negocio (menu.sucafe.com): la raíz muestra su menú.
   if (host && !isAppHost(host)) {
     if (pathname === "/") return NextResponse.rewrite(new URL(`/sites/${encodeURIComponent(host)}${search}`, req.url));
-    if (pathname.startsWith("/admin")) {
-      const origin = appOrigin();
-      if (origin) return NextResponse.redirect(`${origin}${pathname}${search}`);
+    const origin = appOrigin();
+    // El panel vive en el dominio principal (si este host no es ya el principal: evita un bucle de redirecciones).
+    if (pathname.startsWith("/admin") && origin && new URL(origin).host !== host) {
+      return NextResponse.redirect(`${origin}${pathname}${search}`);
     }
-    return NextResponse.next();
+    if (!pathname.startsWith("/admin")) return NextResponse.next();
   }
 
   if (!pathname.startsWith("/admin") || pathname === "/admin/salir") return NextResponse.next();
