@@ -31,6 +31,7 @@ git push -u origin main
 1. vercel.com → **Add New… → Project** → importa el repo `menu-digital`.
 2. Framework: **Next.js** (se detecta solo). Build: `next build`. Output: automático.
 3. **Base de datos:** Vercel → tu proyecto → **Storage → Create Database → Neon** (Postgres, plan gratis) → conéctala al proyecto (Production, Preview y Development). Vercel agrega `DATABASE_URL` sola. Las tablas y el negocio demo se crean en la primera visita.
+   **Fotos:** Storage → Create Database → **Blob** → conéctalo al proyecto con el prefijo `BLOB` (crea `BLOB_READ_WRITE_TOKEN`). Las fotos se reducen en el navegador (≈150 KB, WebP) antes de subirse.
 4. En **Settings → Environment Variables** agrega:
    - `ADMIN_PASSWORD`: contraseña para crear tu cuenta de superadmin la primera vez.
    - `SESSION_SECRET`: 32+ caracteres aleatorios (firma las sesiones).

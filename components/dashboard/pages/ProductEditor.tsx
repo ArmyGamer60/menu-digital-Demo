@@ -11,6 +11,7 @@ import { cn } from "@/lib/cn";
 import { money } from "@/lib/money";
 import type { Badge, Product, ProductStatus } from "@/types";
 import { useAdmin } from "../AdminProvider";
+import { ImageField } from "../ImageField";
 import { PRESET_TAGS, newId, useProductActions } from "../productActions";
 import {
   Card,
@@ -250,21 +251,17 @@ export function ProductEditor({ productId }: { productId: string | null }) {
             <div className="mb-3.5 flex items-center justify-between">
               <CardTitle>Imagen</CardTitle>
               <PButton size="sm" className="h-[34px]" aria-expanded={picker} onClick={() => setPicker((v) => !v)}>
-                {picker ? "Cerrar galería" : "Cambiar imagen"}
+                {picker ? "Cerrar galería" : "Fotos de ejemplo"}
               </PButton>
             </div>
-            <div className="flex flex-wrap items-start gap-4">
-              <Thumb src={draft.image} className="flex aspect-[4/5] w-[180px] items-center justify-center rounded-xl text-[13px] text-p-muted">
-                {draft.image ? null : <span>Sin imagen</span>}
-              </Thumb>
-              <div className="min-w-[220px] flex-1">
-                <PLabel htmlFor="pe-img">URL de la imagen</PLabel>
-                <PInput id="pe-img" value={draft.image} onChange={(e) => set("image", e.target.value)} placeholder="https://" className="text-[13px]" />
-                <div className="mt-2 text-[12.5px] leading-[1.45] text-p-muted">
-                  Recomendado: 1200 × 1500 px, fondo limpio, luz natural. En la fase 2 la imagen se subirá a Supabase Storage.
-                </div>
-              </div>
-            </div>
+            <ImageField
+              kind="product"
+              label="Foto del producto"
+              value={draft.image}
+              onChange={(url) => set("image", url)}
+              previewClassName="aspect-[4/5] w-[180px] max-[420px]:w-[140px]"
+              hint="Vertical, fondo limpio y luz natural. JPG, PNG o WebP; se reduce automáticamente."
+            />
             {picker ? (
               <div className="mt-4 grid animate-[rise_.2s] grid-cols-[repeat(auto-fill,minmax(min(76px,100%),1fr))] gap-2">
                 {GALLERY.map((src) => (

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { optimizable } from "@/lib/images";
 import { Handbag, Minus, Plus, X } from "lucide-react";
 import { Button, Drawer, IconButton } from "@/components/ui";
 import type { CartTotals } from "@/lib/pricing";
@@ -74,7 +75,7 @@ export function CartContents({
             {lines.map((l) => (
               <li key={l.id} className="flex animate-rise-fast gap-3 border-b border-line py-3.5">
                 <div className="relative size-[60px] flex-none overflow-hidden rounded-xl bg-img-bg">
-                  {l.image ? <Image src={l.image} alt="" fill sizes="60px" className="object-cover" /> : null}
+                  {l.image ? <Image src={l.image} unoptimized={!optimizable(l.image)} alt="" fill sizes="60px" className="object-cover" /> : null}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex justify-between gap-2">

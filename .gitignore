@@ -46,3 +46,6 @@ next-env.d.ts
 
 # base de datos local (PGlite)
 /.data/
+
+# imágenes subidas en desarrollo (sin Vercel Blob)
+/public/uploads/

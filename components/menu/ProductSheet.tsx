@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { optimizable } from "@/lib/images";
 import { Check, Minus, Plus, X } from "lucide-react";
 import { Badge, IconButton, Pill, Sheet, Textarea } from "@/components/ui";
 import { cn } from "@/lib/cn";
@@ -137,7 +138,7 @@ export function ProductSheet({ business, state, status, onChange, onClose, onCom
       <>
         <div className="relative h-[34%] flex-none bg-img-bg tab:h-auto tab:w-[46%]">
           {product.image ? (
-            <Image src={product.image} alt={product.name} fill sizes="(min-width: 700px) 440px, 100vw" className="object-cover" />
+            <Image src={product.image} unoptimized={!optimizable(product.image)} alt={product.name} fill sizes="(min-width: 700px) 440px, 100vw" className="object-cover" />
           ) : null}
           <IconButton aria-label="Cerrar" tone="white" onClick={onClose} className="absolute! top-3.5 right-3.5">
             <X size={18} strokeWidth={2} />

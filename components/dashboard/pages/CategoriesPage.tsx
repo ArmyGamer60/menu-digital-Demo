@@ -23,6 +23,7 @@ import { Toggle } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import type { Category } from "@/types";
 import { useAdmin } from "../AdminProvider";
+import { ImageField } from "../ImageField";
 import { newId } from "../productActions";
 import {
   IconBtn,
@@ -339,15 +340,16 @@ export function CategoriesPage() {
               />
             </div>
             <div>
-              <PLabel htmlFor="cat-img" hint="(opcional)">
-                Imagen
-              </PLabel>
-              <PInput
-                id="cat-img"
+              <div className="mb-1.5 text-[13px] font-semibold">
+                Imagen <span className="font-normal text-p-muted">(opcional)</span>
+              </div>
+              <ImageField
+                kind="category"
+                label="Imagen de la categoría"
                 value={drawer.draft.image ?? ""}
-                onChange={(e) => setDr("image", e.target.value)}
-                placeholder="https://"
-                className="text-[12.5px]"
+                onChange={(url) => setDr("image", url)}
+                previewClassName="size-[88px]"
+                empty="Subir"
               />
             </div>
             <SettingRow

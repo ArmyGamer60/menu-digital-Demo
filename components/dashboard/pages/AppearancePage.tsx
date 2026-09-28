@@ -8,9 +8,9 @@ import { cn } from "@/lib/cn";
 import { fontPairFamilies } from "@/lib/theme";
 import type { Business, CardStyle, FontPair, Layout, Theme } from "@/types";
 import { useAdmin } from "../AdminProvider";
+import { ImageField, useImageUpload } from "../ImageField";
 import { Card, CardTitle, PInput, PLabel, PageHeader, Thumb } from "../ui";
 
-const MAX_UPLOAD = 400_000;
 type BrandSlot = "logoImage" | "logoAlt" | "favicon";
 const SLOTS: [BrandSlot, string][] = [
   ["logoImage", "Logo"],
@@ -136,20 +136,20 @@ function LivePreview({ business }: { business: Business }) {
 }
 
 export function AppearancePage() {
-  const { business, update, toast } = useAdmin();
+  const { business, update } = useAdmin();
   const t = business.theme;
   const setTheme = <K extends keyof Theme>(k: K, v: Theme[K], msg?: string) => update((d) => void (d.theme[k] = v), msg);
   const setBiz = (k: "logoText" | "name" | "tagline", v: string) => update((d) => void (d[k] = v));
 
-  const onFile = (slot: BrandSlot, label: string) => (e: ChangeEvent<HTMLInputElement>) => {
+  const { upload, busy: uploading } = useImageUpload();
+  const [uploadingSlot, setUploadingSlot] = useState<BrandSlot | null>(null);
+  const onFile = (slot: BrandSlot, label: string) => async (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     e.target.value = "";
-    if (!f) return;
-    if (!f.type.startsWith("image/")) return toast("Sube un archivo de imagen");
-    if (f.size > MAX_UPLOAD) return toast("Usa una imagen menor a 400 KB");
-    const r = new FileReader();
-    r.onload = () => update((d) => void (d[slot] = String(r.result)), `${label} actualizado`);
-    r.readAsDataURL(f);
+    setUploadingSlot(slot);
+    const url = await upload(f, slot === "favicon" ? "favicon" : "logo");
+    setUploadingSlot(null);
+    if (url) update((d) => void (d[slot] = url), `${label} actualizado`);
   };
 
   return (
@@ -171,8 +171,8 @@ export function AppearancePage() {
                       ) : (
                         <Plus size={20} strokeWidth={1.6} aria-hidden />
                       )}
-                      <span className="font-semibold text-p-soft">{label}</span>
-                      <input type="file" accept="image/*" className="sr-only" onChange={onFile(k, label)} />
+                      <span className="font-semibold text-p-soft">{uploading && uploadingSlot === k ? "Subiendo…" : label}</span>
+                      <input type="file" accept="image/*" className="sr-only" disabled={uploading} onChange={(e) => void onFile(k, label)(e)} />
                     </label>
                     {src ? (
                       <button
@@ -305,12 +305,13 @@ export function AppearancePage() {
               <div className="mt-3.5 grid gap-2.5">
                 <PInput aria-label="Título del hero" value={t.heroTitle} onChange={(e) => setTheme("heroTitle", e.target.value)} placeholder="Título" />
                 <PInput aria-label="Mensaje del hero" value={t.heroText} onChange={(e) => setTheme("heroText", e.target.value)} placeholder="Mensaje" />
-                <PInput
-                  aria-label="Imagen del hero (URL)"
+                <ImageField
+                  kind="hero"
+                  label="Imagen del hero"
                   value={t.heroImage}
-                  onChange={(e) => setTheme("heroImage", e.target.value)}
-                  placeholder="URL de imagen"
-                  className="text-[12.5px]"
+                  onChange={(url) => setTheme("heroImage", url, url ? "Imagen del hero actualizada" : "Imagen del hero quitada")}
+                  previewClassName="aspect-[16/9] w-[200px]"
+                  hint="Horizontal, idealmente 1800 × 1000 px."
                 />
               </div>
             ) : null}

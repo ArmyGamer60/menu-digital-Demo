@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { optimizable } from "@/lib/images";
 import type { Theme } from "@/types";
 
 /** Hero full-bleed con degradado, pill "Especial" en --accent. */
@@ -8,6 +9,7 @@ export function Hero({ theme }: { theme: Theme }) {
       {theme.heroImage ? (
         <Image
           src={theme.heroImage}
+          unoptimized={!optimizable(theme.heroImage)}
           alt=""
           fill
           priority

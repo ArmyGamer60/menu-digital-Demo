@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { optimizable } from "@/lib/images";
 import { Plus } from "lucide-react";
 import type { KeyboardEvent, MouseEvent } from "react";
 import { Badge } from "@/components/ui";
@@ -34,6 +35,7 @@ function Photo({ src, alt, sizes, zoom }: { src: string; alt: string; sizes: str
       alt={alt}
       fill
       sizes={sizes}
+      unoptimized={!optimizable(src)}
       className={zoom ? "object-cover transition-transform duration-500 group-hover:scale-105" : "object-cover"}
     />
   );
