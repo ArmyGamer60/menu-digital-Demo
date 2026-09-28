@@ -13,7 +13,13 @@ export interface Db {
 
 export class DbConfigError extends Error {}
 
-const databaseUrl = () => process.env.DATABASE_URL || process.env.POSTGRES_URL || "";
+/** DATABASE_URL / POSTGRES_URL, o la misma variable con prefijo (Vercel Storage permite uno: STORAGE_DATABASE_URL…). */
+export function databaseUrl(env: NodeJS.ProcessEnv = process.env): string {
+  if (env.DATABASE_URL || env.POSTGRES_URL) return env.DATABASE_URL || env.POSTGRES_URL || "";
+  const keys = Object.keys(env).filter((k) => /(^|_)(DATABASE_URL|POSTGRES_URL)$/.test(k) && env[k]);
+  keys.sort((a, b) => Number(b.endsWith("DATABASE_URL")) - Number(a.endsWith("DATABASE_URL")));
+  return keys[0] ? env[keys[0]]! : "";
+}
 
 function postgresDb(url: string): Db {
   const local = /@(localhost|127\.0\.0\.1)[:/]/.test(url);

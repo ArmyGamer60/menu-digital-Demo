@@ -82,3 +82,14 @@ describe("helpers", () => {
     expect(safeNext(null)).toBe("/admin");
   });
 });
+
+describe("URL de la base de datos", () => {
+  it("acepta DATABASE_URL, POSTGRES_URL o la variable con prefijo de Vercel Storage", async () => {
+    const { databaseUrl } = await import("@/lib/db");
+    expect(databaseUrl(env({ DATABASE_URL: "a" }))).toBe("a");
+    expect(databaseUrl(env({ POSTGRES_URL: "b" }))).toBe("b");
+    expect(databaseUrl(env({ STORAGE_POSTGRES_URL: "c", STORAGE_DATABASE_URL: "d" }))).toBe("d");
+    expect(databaseUrl(env({ NEON_POSTGRES_URL: "e", OTHER: "x" }))).toBe("e");
+    expect(databaseUrl(env({ DATABASE_URL_UNPOOLED: "f" }))).toBe("");
+  });
+});
