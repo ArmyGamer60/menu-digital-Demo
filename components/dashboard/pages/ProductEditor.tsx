@@ -306,7 +306,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                 Este producto no tiene modificadores.
               </div>
             ) : (
-              <div className="grid gap-2">
+              <div className="grid grid-cols-[minmax(0,1fr)] gap-2">
                 {groups.map((g, i) => (
                   <div key={g.id} className="flex items-center gap-3 rounded-[10px] border border-p-card px-3.5 py-3">
                     <div className="min-w-0 flex-1">
@@ -319,7 +319,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                           {g.type === "single" ? "Única" : "Múltiple"} · {g.required ? "Obligatorio" : "Opcional"}
                         </span>
                       </div>
-                      <div className="mt-[3px] truncate text-[12.5px] text-p-muted">
+                      <div className="mt-[3px] line-clamp-2 text-[12.5px] break-words text-p-muted">
                         {g.options.map((o) => o.name + (o.price ? ` +${m(o.price)}` : "")).join(" · ")}
                       </div>
                     </div>

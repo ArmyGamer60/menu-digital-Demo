@@ -181,8 +181,8 @@ export function ModifiersPage() {
               </div>
               <div className="w-full border-t border-p-sep pt-2">
                 {g.options.map((o) => (
-                  <div key={o.id} className="flex justify-between py-1 text-[13.5px]">
-                    <span>
+                  <div key={o.id} className="flex justify-between gap-3 py-1 text-[13.5px]">
+                    <span className="min-w-0 break-words">
                       {o.name}
                       {o.isDefault ? " · por defecto" : ""}
                     </span>
