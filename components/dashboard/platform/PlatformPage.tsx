@@ -11,6 +11,7 @@ import {
   deleteBusinessAction,
   removeOwnerAction,
   resetPasswordAction,
+  importMenuAction,
   setDomainAction,
   setStatusAction,
   type Credentials,
@@ -29,7 +30,8 @@ type Drawer =
   | { kind: "new" }
   | { kind: "created"; name: string; slug: string; credentials: Credentials | null }
   | { kind: "access"; id: string }
-  | { kind: "domain"; id: string };
+  | { kind: "domain"; id: string }
+  | { kind: "import"; id: string };
 
 const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" });
 
@@ -120,6 +122,7 @@ export function PlatformPage({ user, businesses, activeId }: { user: SessionUser
               current={b.id === activeId}
               onAccess={() => setDrawer({ kind: "access", id: b.id })}
               onDomain={() => setDrawer({ kind: "domain", id: b.id })}
+              onImport={() => setDrawer({ kind: "import", id: b.id })}
               onToggleStatus={() => {
                 const suspend = b.status === "active";
                 const go = async () => void after(await setStatusAction(b.id, suspend ? "suspended" : "active"), suspend ? "Negocio suspendido" : "Negocio activado");
@@ -168,6 +171,12 @@ export function PlatformPage({ user, businesses, activeId }: { user: SessionUser
         onChanged={() => router.refresh()}
         askConfirm={setConfirm}
       />
+      <ImportDrawer
+        business={drawer?.kind === "import" ? byId(drawer.id) : undefined}
+        onClose={() => setDrawer(null)}
+        askConfirm={setConfirm}
+        onDone={(r) => after(r, r.ok && "summary" in r ? `Menú importado: ${r.summary}` : "") && setDrawer(null)}
+      />
       <DomainDrawer
         business={drawer?.kind === "domain" ? byId(drawer.id) : undefined}
         onClose={() => setDrawer(null)}
@@ -206,6 +215,7 @@ function BusinessCard({
   current,
   onAccess,
   onDomain,
+  onImport,
   onToggleStatus,
   onDelete,
 }: {
@@ -213,6 +223,7 @@ function BusinessCard({
   current: boolean;
   onAccess: () => void;
   onDomain: () => void;
+  onImport: () => void;
   onToggleStatus: () => void;
   onDelete: () => void;
 }) {
@@ -294,6 +305,7 @@ function BusinessCard({
               className="absolute top-[calc(100%+6px)] right-0 z-20 w-[210px] animate-fade-in overflow-hidden rounded-xl border border-p-card bg-white py-1.5 shadow-[0_18px_40px_rgba(0,0,0,.18)]"
             >
               {item("Ver menú", () => window.open(`/menu/${b.slug}`, "_blank"))}
+              {item("Importar menú", onImport)}
               {item(b.customDomain ? "Cambiar dominio" : "Dominio propio", onDomain)}
               {item(suspended ? "Reactivar" : "Suspender", onToggleStatus)}
               {item("Eliminar negocio", onDelete, true)}
@@ -723,6 +735,98 @@ function DomainDrawer({
             <li>Guarda aquí. En cuanto el DNS se propague (minutos a unas horas) el menú abre en ese dominio.</li>
           </ol>
           <Help>El enlace /menu/{business.slug} sigue funcionando. Para mostrar el menú dentro de otra web, usa un iframe con esa dirección.</Help>
+        </div>
+      ) : null}
+    </PanelDrawer>
+  );
+}
+
+function ImportDrawer({
+  business,
+  onClose,
+  askConfirm,
+  onDone,
+}: {
+  business: BusinessSummary | undefined;
+  onClose: () => void;
+  askConfirm: (c: { title: string; text: string; label: string; run: () => Promise<void> }) => void;
+  onDone: (r: { ok: boolean; error?: string; summary?: string }) => void;
+}) {
+  const [text, setText] = useState("");
+  const [fileName, setFileName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const id = business?.id;
+  useEffect(() => {
+    setText("");
+    setFileName("");
+  }, [id]);
+
+  const run = () => {
+    if (!business) return;
+    askConfirm({
+      title: `¿Reemplazar el menú de “${business.name}”?`,
+      text: "Se sustituyen sus categorías, productos, modificadores y promociones por los del archivo. Los pedidos y los accesos no cambian.",
+      label: "Importar",
+      run: async () => {
+        setBusy(true);
+        const r = await importMenuAction(business.id, text).catch(() => ({ ok: false as const, error: "Sin conexión." }));
+        setBusy(false);
+        onDone(r);
+      },
+    });
+  };
+
+  return (
+    <PanelDrawer
+      open={!!business}
+      title="Importar menú"
+      onClose={onClose}
+      footer={
+        <>
+          <div />
+          <div className="flex gap-2">
+            <PButton onClick={onClose}>Cancelar</PButton>
+            <PButton variant="primary" disabled={busy || !text.trim()} onClick={run}>
+              {busy ? "Importando…" : "Importar"}
+            </PButton>
+          </div>
+        </>
+      }
+    >
+      {business ? (
+        <div className="grid gap-4">
+          <div className="text-p-muted">
+            Carga el archivo <span className="font-mono">.json</span> del menú de <b className="text-p-ink">{business.name}</b>.
+          </div>
+          <label className="flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-[1.5px] border-dashed border-p-input bg-p-row px-4 py-7 text-center hover:border-p-ink">
+            <span className="font-semibold">{fileName || "Elegir archivo"}</span>
+            <span className="text-[12.5px] text-p-muted">{fileName ? "Listo para importar" : "o pega el contenido abajo"}</span>
+            <input
+              type="file"
+              accept="application/json,.json"
+              className="sr-only"
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (!f) return;
+                setFileName(f.name);
+                setText(await f.text());
+              }}
+            />
+          </label>
+          <textarea
+            aria-label="Contenido del menú (JSON)"
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              setFileName("");
+            }}
+            rows={8}
+            spellCheck={false}
+            placeholder='{ "categories": [...], "products": [...] }'
+            className="w-full rounded-[10px] border border-p-input bg-white p-3 font-mono text-[12px] outline-none focus:border-p-ink"
+          />
+          <Help>Se revisa todo antes de guardar: si falta una categoría o un modificador, no se cambia nada y verás el error.</Help>
         </div>
       ) : null}
     </PanelDrawer>

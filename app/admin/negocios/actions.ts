@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { isValidEmail } from "@/lib/auth";
+import { applyMenuImport } from "@/lib/menuImport";
 import { MIN_PASSWORD, generatePassword } from "@/lib/password";
 import {
   RepoError,
@@ -15,6 +16,7 @@ import {
   getUserForLogin,
   listUsers,
   removeMembership,
+  saveBusiness,
   setBusinessStatus,
   setCustomDomain,
   updateUser,
@@ -145,5 +147,25 @@ export async function resetPasswordAction(userId: string) {
     const password = generatePassword();
     await updateUser(userId, { password });
     return { credentials: { email: user.email, password } satisfies Credentials };
+  });
+}
+
+/** Reemplaza el catálogo del negocio con un menú en JSON (ver lib/menuImport.ts). */
+export async function importMenuAction(businessId: string, jsonText: string) {
+  return run(async () => {
+    if (jsonText.length > 2_000_000) throw new RepoError("El archivo es demasiado grande.");
+    const row = await getBusinessRow(businessId);
+    if (!row) throw new RepoError("Negocio no encontrado.");
+    let raw: unknown;
+    try {
+      raw = JSON.parse(jsonText);
+    } catch {
+      throw new RepoError("El archivo no es un JSON válido.");
+    }
+    const r = applyMenuImport(row.business, raw);
+    if (!r.ok) throw new RepoError(r.error);
+    await saveBusiness(r.business);
+    await revalidateMenu(businessId);
+    return { summary: r.summary };
   });
 }

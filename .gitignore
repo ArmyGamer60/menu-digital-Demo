@@ -49,3 +49,6 @@ next-env.d.ts
 
 # imágenes subidas en desarrollo (sin Vercel Blob)
 /public/uploads/
+
+# menús de clientes para importar (no se versionan)
+/imports/

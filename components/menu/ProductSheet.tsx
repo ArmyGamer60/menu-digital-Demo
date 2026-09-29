@@ -136,14 +136,19 @@ export function ProductSheet({ business, state, status, onChange, onClose, onCom
 
     return (
       <>
-        <div className="relative h-[34%] flex-none bg-img-bg tab:h-auto tab:w-[46%]">
-          {product.image ? (
+        {product.image ? (
+          <div className="relative h-[34%] flex-none bg-img-bg tab:h-auto tab:w-[46%]">
             <Image src={product.image} unoptimized={!optimizable(product.image)} alt={product.name} fill sizes="(min-width: 700px) 440px, 100vw" className="object-cover" />
-          ) : null}
-          <IconButton aria-label="Cerrar" tone="white" onClick={onClose} className="absolute! top-3.5 right-3.5">
+            <IconButton aria-label="Cerrar" tone="white" onClick={onClose} className="absolute! top-3.5 right-3.5">
+              <X size={18} strokeWidth={2} />
+            </IconButton>
+          </div>
+        ) : (
+          // Sin foto: solo el botón de cerrar sobre el contenido.
+          <IconButton aria-label="Cerrar" tone="white" onClick={onClose} className="absolute! top-3.5 right-3.5 z-[2]">
             <X size={18} strokeWidth={2} />
           </IconButton>
-        </div>
+        )}
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <div className="flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-[22px] pt-[22px] pb-2">
@@ -155,7 +160,7 @@ export function ProductSheet({ business, state, status, onChange, onClose, onCom
                 ))}
               </div>
             ) : null}
-            <h2 className="m-0 font-display text-[32px] leading-[1.02] font-normal tracking-[-.015em]">{product.name}</h2>
+            <h2 className="m-0 pr-12 font-display text-[32px] leading-[1.02] font-normal tracking-[-.015em]">{product.name}</h2>
             <p className="mt-2.5 mb-0 text-[15px] leading-normal text-muted">{product.description}</p>
             <div className="mt-3 flex items-baseline gap-2.5">
               <span className="text-xl font-bold">{v.priceLabel}</span>
@@ -240,7 +245,11 @@ export function ProductSheet({ business, state, status, onChange, onClose, onCom
       onClose={onClose}
       label={product?.name ?? "Producto"}
       z={70}
-      className="h-[95%] tab:h-[min(640px,100%)] tab:w-[min(920px,100%)] tab:flex-row"
+      className={
+        product && !product.image
+          ? "relative max-h-[95%] tab:max-h-[min(640px,100%)] tab:w-[min(520px,100%)]"
+          : "h-[95%] tab:h-[min(640px,100%)] tab:w-[min(920px,100%)] tab:flex-row"
+      }
     >
       {body}
     </Sheet>

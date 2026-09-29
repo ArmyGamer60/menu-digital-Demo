@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { cn } from "@/lib/cn";
 import { optimizable } from "@/lib/images";
 import { Plus } from "lucide-react";
 import type { KeyboardEvent, MouseEvent } from "react";
@@ -64,6 +65,47 @@ function ProductGridCard({ view, onOpen, onQuick, index }: Omit<ProductCardProps
     e.stopPropagation();
     onQuick();
   };
+  const quickBtn = (className: string) =>
+    view.canQuick ? (
+      <button
+        type="button"
+        aria-label={`Agregar ${p.name}`}
+        onClick={quick}
+        onKeyDown={(e) => e.stopPropagation()}
+        className={cn(
+          "flex size-10 flex-none items-center justify-center rounded-full border-0 bg-bg text-ink shadow-[0_4px_14px_rgba(0,0,0,.18)] transition-transform duration-150 active:scale-90",
+          className,
+        )}
+      >
+        <Plus size={18} strokeWidth={2.2} />
+      </button>
+    ) : null;
+
+  // Sin foto: tarjeta de texto (sin recuadro vacío); el botón de agregar va junto al precio.
+  if (!p.image) {
+    return (
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label={`${p.name}, ${view.priceLabel}${view.soldOut ? ", agotado" : ""}`}
+        onClick={onOpen}
+        onKeyDown={activate(onOpen)}
+        className="pcard group relative flex animate-rise cursor-pointer flex-col overflow-hidden transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5"
+        style={{ animationDelay: `${Math.min(index ?? 0, 8) * 30}ms` }}
+      >
+        <div className="pcard-body flex flex-1 flex-col gap-1">
+          {view.badge ? <Badge tone={view.badge} className="mb-1 self-start" /> : null}
+          <div className="pcard-title leading-[1.12] text-pretty">{p.name}</div>
+          <div className="pdesc line-clamp-2 text-[13px] leading-[1.4] text-muted">{p.description}</div>
+          <div className="mt-auto flex items-end justify-between gap-2 pt-1.5">
+            <Price view={view} className="flex items-baseline gap-2" />
+            {view.soldOut ? <span className="text-[12.5px] font-semibold text-muted">Agotado</span> : quickBtn("")}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       role="button"
@@ -82,17 +124,7 @@ function ProductGridCard({ view, onOpen, onQuick, index }: Omit<ProductCardProps
             Agotado temporalmente
           </div>
         ) : null}
-        {view.canQuick ? (
-          <button
-            type="button"
-            aria-label={`Agregar ${p.name}`}
-            onClick={quick}
-            onKeyDown={(e) => e.stopPropagation()}
-            className="absolute right-2.5 bottom-2.5 flex size-10 items-center justify-center rounded-full border-0 bg-bg text-ink shadow-[0_4px_14px_rgba(0,0,0,.18)] transition-transform duration-150 active:scale-90"
-          >
-            <Plus size={18} strokeWidth={2.2} />
-          </button>
-        ) : null}
+        {quickBtn("absolute right-2.5 bottom-2.5")}
       </div>
       <div className="pcard-body flex flex-1 flex-col gap-1">
         <div className="pcard-title leading-[1.12] text-pretty">{p.name}</div>
@@ -152,10 +184,12 @@ function ProductRow({ view, onOpen }: Pick<ProductCardProps, "view" | "onOpen">)
           {view.soldOut ? <span className="text-[12.5px] font-semibold text-muted">Agotado temporalmente</span> : null}
         </div>
       </div>
-      <div className="prow-thumb relative flex-none overflow-hidden bg-img-bg">
-        <Photo src={p.image} alt={p.name} sizes="112px" />
-        {view.soldOut ? <div className="absolute inset-0 bg-[rgba(20,18,15,.5)]" /> : null}
-      </div>
+      {p.image ? (
+        <div className="prow-thumb relative flex-none overflow-hidden bg-img-bg">
+          <Photo src={p.image} alt={p.name} sizes="112px" />
+          {view.soldOut ? <div className="absolute inset-0 bg-[rgba(20,18,15,.5)]" /> : null}
+        </div>
+      ) : null}
     </div>
   );
 }
